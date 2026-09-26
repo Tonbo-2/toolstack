@@ -51,12 +51,6 @@ export default async function BlogIndex({ params }: { params: Promise<{ locale: 
                 >
                   {t.blog.openDirectory}
                 </Link>
-                <Link
-                  href={localeHref(locale, "/cheat-sheet")}
-                  className="inline-flex h-11 items-center rounded-md border border-border bg-card px-5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
-                >
-                  {t.blog.readCheat}
-                </Link>
               </div>
             </div>
           ) : (

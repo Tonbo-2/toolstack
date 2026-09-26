@@ -301,7 +301,7 @@ function sp_repair_duplicate_tools(): int {
 
 /** 管理画面で選べる行き先の一覧（スラッグ => 種別）。 */
 function sp_menu_page_slugs(): array {
-	return array( 'cheat-sheet', 'blog', 'about', 'disclosure', 'privacy' );
+	return array( 'blog', 'about', 'disclosure', 'privacy' );
 }
 
 /** メニュー項目の行き先が、ツール一覧（/tools/ や ?post_type=sp_tool）かどうか。 */
@@ -477,6 +477,77 @@ function sp_repair_menus(): int {
 	return $fixed;
 }
 
+/**
+ * メニューからチートシートの項目を外す（1回だけ）。外した件数を返す。
+ *
+ * 1.3.7 で、チートシートはメニューに載せない形にしました。設置済みのサイトでは
+ * メニューの項目がデータベースに残っているため、行き先がチートシートの項目だけを
+ * ここで外します。実行した印（sp_menu_cheat_removed）を残すので、あとから
+ * オーナーが足し直した項目を消してしまうことはありません。
+ *
+ * 1.3.8 以降はページ本体も廃止したので、この処理は sp_retire_cheat_sheet_page()
+ * から呼ばれます（1.3.7 の点検で一度走ったサイトでは、印が残っているため
+ * 何もしません。項目はすでに外れています）。
+ */
+function sp_remove_cheat_sheet_menu_items(): int {
+	if ( get_option( 'sp_menu_cheat_removed' ) ) {
+		return 0;
+	}
+	update_option( 'sp_menu_cheat_removed', 1 );
+
+	$locations = get_theme_mod( 'nav_menu_locations' );
+	if ( ! is_array( $locations ) ) {
+		return 0;
+	}
+
+	$removed = 0;
+	foreach ( array_unique( array_map( 'intval', $locations ) ) as $menu_id ) {
+		$items = wp_get_nav_menu_items( $menu_id );
+		if ( ! $items ) {
+			continue;
+		}
+		foreach ( $items as $item ) {
+			$target = sp_menu_item_target( $item );
+			if ( ! is_array( $target ) || 'page' !== (string) ( $target['type'] ?? '' ) || 'cheat-sheet' !== (string) ( $target['slug'] ?? '' ) ) {
+				continue;
+			}
+			if ( wp_delete_post( (int) $item->ID, true ) ) {
+				$removed++;
+			}
+		}
+	}
+	return $removed;
+}
+
+/**
+ * 廃止したチートシートのページをゴミ箱へ移す（1回だけ）。
+ *
+ * 2026-09-26 に、ページ本体・トップページの案内・メール登録をまとめて外しました。
+ * 設置済みのサイトには固定ページが残っているため、ここでゴミ箱へ移します。
+ * 消してはいません。管理画面の「固定ページ → ゴミ箱」から戻せるので、判断を
+ * やり直したくなったときは復元できます（実行した印 sp_cheat_sheet_retired）。
+ *
+ * 戻り値は array( 'menu' => 外したメニュー項目数, 'page' => 移したページ数 )。
+ */
+function sp_retire_cheat_sheet_page(): array {
+	if ( get_option( 'sp_cheat_sheet_retired' ) ) {
+		return array( 'menu' => 0, 'page' => 0 );
+	}
+	update_option( 'sp_cheat_sheet_retired', 1 );
+
+	// メニューに残っている項目（1.3.7 の点検がまだ走っていないサイト）を外してから、
+	// ページ本体をゴミ箱へ。順番はどちらでも構いませんが、先に項目を外しておくと
+	// 行き先のないメニューが一瞬できません。
+	$menu = sp_remove_cheat_sheet_menu_items();
+
+	$page = get_page_by_path( 'cheat-sheet' );
+	if ( ! $page || 'trash' === $page->post_status ) {
+		return array( 'menu' => $menu, 'page' => 0 );
+	}
+	$trashed = wp_trash_post( (int) $page->ID ) ? 1 : 0;
+	return array( 'menu' => $menu, 'page' => $trashed );
+}
+
 /* ---------------------------------------------------------------
  * 点検の実行とお知らせ
  * ------------------------------------------------------------- */
@@ -516,6 +587,7 @@ function sp_run_health_check( bool $force = false ): array {
 	$urls  = sp_align_permalinks();
 	$dupes = sp_repair_duplicate_tools();
 	$menus = sp_repair_menus();
+	$sheet = sp_retire_cheat_sheet_page();
 
 	// 古い404がキャッシュに残っているときだけ、心当たりのある仕組みに削除を頼む。
 	$purged = array();
@@ -533,6 +605,8 @@ function sp_run_health_check( bool $force = false ): array {
 		'purged'     => $purged,
 		'duplicates' => $dupes,
 		'menus'      => $menus,
+		'cheat_menu' => (int) ( $sheet['menu'] ?? 0 ),
+		'cheat_page' => (int) ( $sheet['page'] ?? 0 ),
 		'title'      => $title,
 		'time'       => time(), // 時差の影響を受けないよう、保存はUNIX時刻で。
 	);
@@ -670,7 +744,7 @@ function sp_health_notice() {
 			<p><strong>StackProof: URLの形を自動で判定できませんでした</strong></p>
 			<p>
 				このサーバー自身から <code>/tools/</code> を開けなかったため、自動での判定を見送りました（設定は変更していません）。
-				ブラウザでサイトを開き、メニューの「ツール」「チートシート」などが表示されるかご確認ください。
+				ブラウザでサイトを開き、メニューの「ツール」「ブログ」などが表示されるかご確認ください。
 				もし404になる場合は <strong>設定 → パーマリンク</strong> を開き、「基本」を選んで保存してください（サイト内のリンクが開くようになります）。
 				サーバー側を直したあとは、下の「再チェック」で元のきれいなURLに戻せます。
 			</p>
@@ -727,8 +801,10 @@ function sp_health_notice() {
 
 	$dupes = (int) ( $state['duplicates'] ?? 0 );
 	$menus = (int) ( $state['menus'] ?? 0 );
+	$sheet = (int) ( $state['cheat_menu'] ?? 0 );
+	$sheet_page = (int) ( $state['cheat_page'] ?? 0 );
 	$title = (string) ( $state['title'] ?? '' );
-	if ( ! $dupes && ! $menus && '' === $title ) {
+	if ( ! $dupes && ! $menus && ! $sheet && ! $sheet_page && '' === $title ) {
 		return;
 	}
 	?>
@@ -746,6 +822,12 @@ function sp_health_notice() {
 			<?php endif; ?>
 			<?php if ( $menus ) : ?>
 				<li>メニューの <?php echo esc_html( (string) $menus ); ?> か所のリンクを、URLを固定しない形に直しました（URLの形を変えてもリンクが切れなくなります）。</li>
+			<?php endif; ?>
+			<?php if ( $sheet ) : ?>
+				<li>メニューから「チートシート」の項目を <?php echo esc_html( (string) $sheet ); ?> か所外しました。</li>
+			<?php endif; ?>
+			<?php if ( $sheet_page ) : ?>
+				<li>廃止した「ワークフロー・チートシート」のページ <?php echo esc_html( (string) $sheet_page ); ?> 枚を<strong>ゴミ箱へ移しました</strong>（トップページの案内とメール登録も外しています）。消してはいないので、戻す場合は <strong>固定ページ → ゴミ箱</strong> から復元できます。</li>
 			<?php endif; ?>
 		</ul>
 	</div>

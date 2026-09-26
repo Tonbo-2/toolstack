@@ -63,7 +63,6 @@ $sp_is_search = is_search();
 				<p class="sp-small" style="margin-top:0.75rem"><?php echo esc_html( sp_t( 'blog.emptyBody' ) ); ?></p>
 				<p style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1.5rem">
 					<a class="sp-btn sp-btn--primary" href="<?php echo esc_url( get_post_type_archive_link( 'sp_tool' ) ); ?>"><?php echo esc_html( sp_t( 'blog.openDirectory' ) ); ?></a>
-					<a class="sp-btn sp-btn--secondary" href="<?php echo esc_url( sp_page_url( 'cheat-sheet' ) ); ?>"><?php echo esc_html( sp_t( 'blog.readCheat' ) ); ?></a>
 				</p>
 			</div>
 		<?php endif; ?>

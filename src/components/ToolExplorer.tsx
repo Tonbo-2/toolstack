@@ -148,10 +148,10 @@ export function ToolExplorer({
                   <span className="mt-2 block md:mt-0">{label}</span>
                 </td>
                 <td className="block align-top text-sm text-muted md:table-cell md:py-4 md:pr-4">
-                  <span className="mt-2 block md:mt-0">{tool.bestFor}</span>
+                  <span className="mt-2 block whitespace-pre-line md:mt-0">{tool.bestFor}</span>
                 </td>
                 <td className="block align-top text-sm text-muted md:table-cell md:py-4">
-                  <span className="mt-2 block md:mt-0">{tool.watchFor}</span>
+                  <span className="mt-2 block whitespace-pre-line md:mt-0">{tool.watchFor}</span>
                 </td>
               </tr>
             );

@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 /**
- * Moved to `src/app/[locale]/cheat-sheet/page.tsx`. Safe to delete once the
- * repository can be edited outside this session.
+ * 廃止した旧ルート（プロキシの内部rewriteがあるため、通常はここへ到達しません）。
+ * 到達した場合も行き止まりにしないよう、ツール一覧へ送ります。
  */
 export default function LegacyCheatSheet() {
-  redirect("/en/cheat-sheet");
+  permanentRedirect("/tools");
 }

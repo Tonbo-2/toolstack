@@ -9,7 +9,7 @@ export const BRAND = {
   name: "StackProof",
   tagline: "仕事で使えるAIツールの比較・レビュー",
   blurb:
-    "仕事で使うAIツールを、リモートワーカーや小規模チームの目線で比較しています。文章作成、会議、業務の自動化、メールなどが対象です。良い点もデメリットも同じように書き、情報を確認した日付を添えています。",
+    "仕事で使うAIツールを、個人や小規模チームの目線で比較しています。文章作成、会議、業務の自動化、メールなどが対象です。メリットもデメリットも同じように書き、情報を確認した日付を添えています。",
   /** 3:1 wordmark (navy on transparent) — header and footer. */
   logoUrl:
     "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/33719bfe29afd94a.webp",
@@ -21,7 +21,10 @@ export const BRAND = {
   /** 16:9 hero (2K). */
   heroImage:
     "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/d974269c75eee95b.webp",
-  /** 3:2 supporting photo (notebook + comparison grid). */
+  /**
+   * 3:2 supporting photo (notebook + comparison grid). トップページの
+   * 「このサイトにないもの」を外したため、いまは未使用（2026-09-26）。
+   */
   deskImage:
     "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/9f1cb80e5d602e02.webp",
 } as const;

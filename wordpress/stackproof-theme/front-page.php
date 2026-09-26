@@ -1,7 +1,12 @@
 <?php
 /**
- * トップページ。ヒーロー → 評価の作り方 → ツール一覧 → 組み合わせ →
- * 最新記事 → このサイトにないもの → チートシート（暗い帯）。
+ * トップページ。ヒーロー → 評価の作り方 → ツール一覧 → 組み合わせ → 最新記事。
+ *
+ * チートシートの帯（案内とメール登録）は、2026-09-26 の指定で外しました。
+ * ページ本体も同じ日に廃止しています（inc/health.php の点検が設置済みサイトの
+ * ページをゴミ箱へ移します）。同じ日、末尾の「このサイトにないもの」も外しました
+ * （Next.js 版と同じ変更。文言は inc/copy.php から、写真はこのファイルから削除）。
+ * 運営方針は「このサイトについて」と「アフィリエイト開示」に残っています。
  */
 get_header();
 
@@ -27,7 +32,6 @@ $sp_recent = get_posts( array( 'post_type' => 'post', 'numberposts' => 3 ) );
 			<p class="sp-lead sp-hero__lead"><?php echo esc_html( sp_t( 'home.lead' ) ); ?></p>
 			<div class="sp-hero__actions">
 				<a class="sp-btn sp-btn--primary" href="<?php echo esc_url( get_post_type_archive_link( 'sp_tool' ) ); ?>"><?php echo esc_html( sp_t( 'home.ctaPrimary' ) ); ?></a>
-				<a class="sp-btn sp-btn--secondary" href="<?php echo esc_url( sp_page_url( 'cheat-sheet' ) ); ?>"><?php echo esc_html( sp_t( 'home.ctaSecondary' ) ); ?></a>
 			</div>
 			<p class="sp-small sp-hero__note"><?php echo esc_html( sp_t( 'home.heroNote' ) ); ?></p>
 		</div>
@@ -83,7 +87,7 @@ $sp_recent = get_posts( array( 'post_type' => 'post', 'numberposts' => 3 ) );
 						<a href="<?php echo esc_url( get_permalink( $sp_tool ) ); ?>"><?php echo esc_html( $sp_tool->post_title ); ?></a>
 					</span>
 					<span class="sp-row__meta"><?php echo esc_html( sp_tool_category_label( $sp_tool->ID ) ); ?></span>
-					<span class="sp-row__meta"><?php echo esc_html( get_post_meta( $sp_tool->ID, 'best_for', true ) ); ?></span>
+					<span class="sp-row__meta"><?php echo nl2br( esc_html( get_post_meta( $sp_tool->ID, 'best_for', true ) ) ); ?></span>
 				</li>
 			<?php endforeach; ?>
 		</ul>
@@ -159,39 +163,5 @@ $sp_recent = get_posts( array( 'post_type' => 'post', 'numberposts' => 3 ) );
 	</div>
 </section>
 <?php endif; ?>
-
-<section id="policy" class="sp-section sp-section--card">
-	<div class="sp-container sp-columns">
-		<img src="<?php echo esc_url( $sp_brand['deskImage'] ); ?>" alt="<?php echo esc_attr( sp_t( 'home.deskAlt' ) ); ?>" width="1536" height="1024" loading="lazy" />
-		<div>
-			<h2 class="sp-h2"><?php echo esc_html( sp_t( 'home.policyTitle' ) ); ?></h2>
-			<ul class="sp-small" style="margin-top:1.5rem;padding-left:1.1rem">
-				<?php foreach ( sp_copy_path( 'home.policyItems' ) as $sp_item ) : ?>
-					<li style="margin-top:0.75rem"><?php echo esc_html( $sp_item ); ?></li>
-				<?php endforeach; ?>
-			</ul>
-			<p style="margin-top:1.5rem">
-				<a class="sp-link-underline" href="<?php echo esc_url( sp_page_url( 'disclosure' ) ); ?>"><?php echo esc_html( sp_t( 'home.policyLink' ) ); ?></a>
-			</p>
-		</div>
-	</div>
-</section>
-
-<section id="cheat-sheet" class="sp-section sp-section--dark">
-	<div class="sp-container sp-columns sp-columns--wide-left">
-		<div>
-			<h2 class="sp-h2"><?php echo esc_html( sp_t( 'home.cheatTitle' ) ); ?></h2>
-			<p class="sp-small" style="margin-top:1rem;max-width:36rem"><?php echo esc_html( sp_t( 'home.cheatLead' ) ); ?></p>
-			<p class="sp-small" style="margin-top:1rem">
-				<a style="text-decoration:underline;text-decoration-color:var(--sp-accent);text-underline-offset:4px" href="<?php echo esc_url( sp_page_url( 'cheat-sheet' ) ); ?>"><?php echo esc_html( sp_t( 'home.cheatRead' ) ); ?></a>
-				<?php echo esc_html( sp_t( 'home.cheatJoinNote' ) ); ?>
-			</p>
-		</div>
-		<div class="sp-panel">
-			<?php echo sp_render_form( 'email', 'dark' ); // phpcs:ignore WordPress.Security.EscapeOutput -- テーマが組み立てたフォーム。 ?>
-			<p class="sp-xs" style="margin-top:1rem;color:rgba(250,250,250,0.7)"><?php echo esc_html( sp_t( 'home.cheatFormNote' ) ); ?></p>
-		</div>
-	</div>
-</section>
 
 <?php get_footer(); ?>

@@ -1,8 +1,7 @@
 /**
  * StackProof テーマの小さな動作。
  *  - ツール一覧の検索とカテゴリ絞り込み（JavaScript が無い場合は全件表示のまま）
- *  - チートシートの印刷ボタン
- * どちらも装飾ではなく操作のための機能なので、動きは最小限です。
+ * 装飾ではなく操作のための機能なので、動きは最小限です。
  */
 (function () {
 	'use strict';
@@ -75,11 +74,4 @@
 
 		apply();
 	}
-
-	/* 印刷 / PDF保存 */
-	Array.prototype.forEach.call(document.querySelectorAll('[data-sp-print]'), function (button) {
-		button.addEventListener('click', function () {
-			window.print();
-		});
-	});
 }());

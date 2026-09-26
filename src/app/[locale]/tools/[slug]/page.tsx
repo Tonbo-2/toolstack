@@ -12,7 +12,7 @@ import {
 import { categoryBySlug, formatReviewed, toolBySlug, toolsInCategory } from "@/lib/tools";
 
 /**
- * The meta description: who the tool suits, then its single biggest trade-off.
+ * The meta description: what the tool is, who it suits, then its biggest trade-off.
  * A search result is truncated somewhere past 160 characters, so the trade-off
  * is cut to its first sentence and any remaining overflow at a sentence or word
  * boundary — a description that stops mid-word reads as broken copy in the SERP.
@@ -21,7 +21,10 @@ function summarize(bestFor: string, watchFor: string, locale: Locale): string {
   const stop = locale === "ja" ? "。" : ". ";
   const cut = watchFor.indexOf(stop);
   const tradeoff = cut >= 0 ? watchFor.slice(0, cut + 1) : watchFor;
-  const full = `${bestFor} ${tradeoff}`.trim();
+  // `bestFor` may carry a "\n" between the description and the fit line; a meta
+  // description is a single line, so the break collapses to a space.
+  const fit = bestFor.replace(/\s+/g, " ").trim();
+  const full = `${fit} ${tradeoff}`.trim();
   if (full.length <= 160) return full;
   if (locale === "ja") {
     const slice = full.slice(0, 159);
@@ -113,7 +116,9 @@ export default async function ToolPage({
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
                 {t.tool.bestFor}
               </dt>
-              <dd className="mt-2 text-sm leading-6 text-muted">{tool.bestFor}</dd>
+              <dd className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
+                {tool.bestFor}
+              </dd>
             </div>
             <div className="border-t border-border pt-4">
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
@@ -125,7 +130,7 @@ export default async function ToolPage({
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
                 {t.tool.watchFor}
               </dt>
-              <dd className="mt-2 text-sm leading-6 text-muted">{tool.watchFor}</dd>
+              <dd className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">{tool.watchFor}</dd>
             </div>
           </dl>
         </div>
@@ -172,7 +177,9 @@ export default async function ToolPage({
                     <ToolMark logo={item.logo} size={22} />
                     {item.name}
                   </Link>
-                  <p className="mt-2 text-sm leading-6 text-muted">{item.bestFor}</p>
+                  <p className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
+                    {item.bestFor}
+                  </p>
                 </li>
               ))}
             </ul>

@@ -1,7 +1,7 @@
 /*
 Theme Name: StackProof
-Description: ソフトウェアの比較・レビューサイト向けテーマ。比較表・レビュー・印刷用チートシートを、テキスト中心の読みやすい画面で表示します。
-Version: 1.3.4
+Description: ソフトウェアの比較・レビューサイト向けテーマ。比較表とレビューを、テキスト中心の読みやすい画面で表示します。
+Version: 1.3.17
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -126,15 +126,8 @@ img, svg, video, iframe { max-width: 100%; height: auto; }
   .sp-section { padding-block: 4rem; }
 }
 
-/* 1ページに1回だけの暗い帯（チートシートCTA） */
-.sp-section--dark {
-  background: var(--sp-foreground);
-  color: var(--sp-background);
-  border-bottom: 0;
-}
-.sp-section--dark h2 { color: var(--sp-background); }
-.sp-section--dark p { color: rgba(250, 250, 250, 0.8); }
-.sp-section--dark a { color: var(--sp-background); }
+/* 1.3.8: 暗い帯（チートシートCTA）と、その上のメール登録フォームのための
+   .sp-section--dark / .sp-form--dark は、帯ごと外したので削除しました。 */
 
 /* ============================================================
    Type helpers
@@ -305,7 +298,7 @@ img, svg, video, iframe { max-width: 100%; height: auto; }
 }
 
 /* ============================================================
-   Method / policy lists
+   Method lists
    ============================================================ */
 .sp-grid-4 { display: grid; gap: 2rem; margin: 2.5rem 0 0; padding: 0; list-style: none; }
 @media (min-width: 640px) { .sp-grid-4 { grid-template-columns: 1fr 1fr; } }
@@ -315,16 +308,6 @@ img, svg, video, iframe { max-width: 100%; height: auto; }
 .sp-item-top--accent { border-top-color: var(--sp-accent); }
 .sp-item__title { font-size: 1rem; }
 .sp-item__body { margin-top: 0.5rem; font-size: 0.875rem; line-height: 1.6; color: var(--sp-muted); }
-
-.sp-columns {
-  display: grid;
-  gap: 2.5rem;
-  align-items: center;
-}
-@media (min-width: 1024px) { .sp-columns { grid-template-columns: 1fr 1fr; } }
-.sp-columns--wide-left { grid-template-columns: 1fr; }
-@media (min-width: 1024px) { .sp-columns--wide-left { grid-template-columns: 1.15fr 1fr; } }
-.sp-columns img { border-radius: var(--sp-radius-lg); border: 1px solid var(--sp-border); }
 
 .sp-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; }
 .sp-head__lead { margin-top: 0.75rem; max-width: 42rem; }
@@ -454,17 +437,6 @@ img, svg, video, iframe { max-width: 100%; height: auto; }
   }
 }
 
-.sp-table--sheet th[scope="row"] {
-  font-family: var(--sp-font-heading);
-  font-size: 1rem;
-  color: var(--sp-foreground);
-}
-@media (min-width: 768px) {
-  .sp-table--sheet th[scope="row"] { width: 30%; }
-}
-.sp-table--sheet .sp-picks { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; margin: 0; padding: 0; list-style: none; }
-.sp-table--sheet .sp-picks a { text-decoration: underline; text-underline-offset: 4px; }
-
 .sp-empty {
   margin-top: 2rem;
   padding: 1.5rem;
@@ -565,15 +537,6 @@ img, svg, video, iframe { max-width: 100%; height: auto; }
 .sp-form__note { margin-top: 1rem; font-size: 0.75rem; line-height: 1.5; color: var(--sp-muted); }
 .sp-form__message { margin-top: 0.75rem; font-size: 0.875rem; color: var(--sp-primary); font-weight: 600; }
 .sp-form__error { margin-top: 0.75rem; font-size: 0.875rem; color: var(--sp-primary); }
-.sp-form--dark .sp-label { color: rgba(250, 250, 250, 0.8); }
-.sp-form--dark .sp-input {
-  background: transparent;
-  border-color: rgba(250, 250, 250, 0.3);
-  color: var(--sp-background);
-}
-.sp-form--dark .sp-input::placeholder { color: rgba(250, 250, 250, 0.5); }
-.sp-form--dark .sp-input:focus { border-color: var(--sp-background); }
-.sp-form--dark .sp-form__error { color: var(--sp-accent); }
 
 .sp-panel {
   padding: 1.5rem;
@@ -638,7 +601,7 @@ img, svg, video, iframe { max-width: 100%; height: auto; }
 .sp-pagination .current { border-color: var(--sp-primary); color: var(--sp-primary); font-weight: 600; }
 
 /* ============================================================
-   Print（チートシートを貼り出せるように）
+   Print（比較表を紙やPDFに落とせるように）
    ============================================================ */
 @media print {
   .sp-header, .sp-footer, .sp-skip, .sp-no-print { display: none !important; }
