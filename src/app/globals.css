@@ -1,0 +1,129 @@
+@import "tailwindcss";
+/* Prose/article typography — blog pages render sanitized HTML/markdown inside a
+   `prose` container; without this plugin those classes generate nothing and
+   headings/lists collapse to preflight-reset plain text. */
+@plugin "@tailwindcss/typography";
+
+/*
+ * Design tokens — StackProof, direction "Clean SaaS" (see .claude/design.md).
+ * The primary/accent below are the site's OWN (navy #1e40af from the wordmark,
+ * signal amber #f59e0b for verdict marks); the neutrals, radius and shadows are
+ * the direction's. Tailwind v4 generates utilities from these tokens
+ * (bg-background, text-foreground, bg-card, text-primary, rounded-md,
+ * shadow-soft, font-heading, …).
+ */
+@theme {
+  /* Palette */
+  --color-background: #fafafa;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-primary: #1e40af;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #f59e0b;
+  --color-accent-foreground: #0f172a;
+
+  /* Typography — mapped to the self-hosted fonts applied in layout.tsx */
+  --font-heading: var(--font-sora), var(--font-fallback);
+  --font-body: var(--font-inter), var(--font-fallback);
+
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  /* Elevation */
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lift: 0 8px 30px rgba(15, 23, 42, 0.1);
+}
+
+/* CJK / system fallback — the curated fonts are latin-only, so Japanese and
+   other non-latin text resolves through this chain. */
+:root {
+  --font-fallback:
+    system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic",
+    "YuGothic", "Noto Sans JP", "Meiryo", sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--color-foreground);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* CJK line-breaking. Japanese / Chinese have no inter-word spaces and Korean
+     breaks best at word boundaries, so the browser default (word-break: normal)
+     splits a heading between any two characters — e.g.「抱」/「えなくていい」.
+     Phrase/word-aware wrapping keeps runs intact; strict kinsoku + looser leading
+     read the way CJK should. word-break: auto-phrase is a progressive enhancement
+     (Chromium today, silently ignored elsewhere, where text-wrap: balance above
+     still helps). The per-language fallback faces keep shared Han glyphs correct
+     for the content's language regardless of the viewer's OS locale. */
+  :where(:lang(ja), :lang(zh)) {
+    word-break: auto-phrase; /* phrase-aware wrap for spaceless scripts */
+    line-break: strict;
+  }
+  :where(:lang(ko)) {
+    word-break: keep-all; /* Korean breaks at word (space) boundaries */
+    overflow-wrap: anywhere;
+    line-break: strict;
+    --font-fallback: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+  }
+  :where(:lang(zh)) {
+    --font-fallback: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  }
+  :where(:lang(ja), :lang(zh), :lang(ko)) :is(p, li) {
+    line-height: 1.8; /* CJK reads better with looser leading */
+  }
+
+  /* Media never overflows its column (next/image is already sized; this catches
+     raw <img>/<svg>/<video> and <iframe> embeds). No horizontal scroll on mobile. */
+  img, svg, video, iframe {
+    max-width: 100%;
+  }
+  img, video {
+    height: auto;
+  }
+
+  /* Visible keyboard focus. currentColor adapts to whatever palette the chosen
+     direction sets — this imposes no color of its own. */
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  /* Anchored sections (every top-level section carries an id) clear a sticky
+     header on #anchor jumps instead of hiding beneath it. */
+  :where([id]) {
+    scroll-margin-top: 5rem;
+  }
+
+  /* No grey tap-flash box on mobile. */
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
