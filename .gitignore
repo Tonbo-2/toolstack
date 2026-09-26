@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# debug
+npm-debug.log*
+pnpm-debug.log*
+
+# Database & data
+data/
+*.db
+*.sqlite
+
+# misc
+.DS_Store
+*.tsbuildinfo
