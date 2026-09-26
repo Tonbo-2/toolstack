@@ -72,8 +72,8 @@ $sp_categories = sp_categories();
 								</span>
 							</td>
 							<td data-label="<?php echo esc_attr( sp_t( 'explorer.columnCategory' ) ); ?>"><?php echo esc_html( $sp_category ); ?></td>
-							<td data-label="<?php echo esc_attr( sp_t( 'explorer.columnBestFor' ) ); ?>"><?php echo esc_html( $sp_best_for ); ?></td>
-							<td data-label="<?php echo esc_attr( sp_t( 'explorer.columnWatchFor' ) ); ?>"><?php echo esc_html( $sp_watch ); ?></td>
+							<td data-label="<?php echo esc_attr( sp_t( 'explorer.columnBestFor' ) ); ?>"><?php echo nl2br( esc_html( $sp_best_for ) ); ?></td>
+							<td data-label="<?php echo esc_attr( sp_t( 'explorer.columnWatchFor' ) ); ?>"><?php echo nl2br( esc_html( $sp_watch ) ); ?></td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>

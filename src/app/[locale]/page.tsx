@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LeadForm } from "@/components/LeadForm";
 import { ToolMark } from "@/components/ToolMark";
 import { BRAND } from "@/lib/brand";
 import { displayDate, fetchArticles } from "@/lib/blog";
@@ -13,8 +12,6 @@ const FEATURED_SLUGS = ["notion", "zapier", "writesonic", "kit", "elevenlabs", "
 
 const buttonPrimary =
   "inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90";
-const buttonSecondary =
-  "inline-flex h-11 items-center rounded-md border border-border bg-card px-5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary";
 const chip =
   "inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-muted transition-colors hover:border-primary hover:text-foreground";
 
@@ -44,9 +41,6 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href={localeHref(locale, "/tools")} className={buttonPrimary}>
                 {t.home.ctaPrimary}
-              </Link>
-              <Link href={localeHref(locale, "/cheat-sheet")} className={buttonSecondary}>
-                {t.home.ctaSecondary}
               </Link>
             </div>
             <p className="mt-6 text-sm text-muted">{t.home.heroNote}</p>
@@ -118,7 +112,9 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
                 <span className="text-sm text-muted">
                   {categories.find((c) => c.slug === tool.category)?.label}
                 </span>
-                <span className="text-sm leading-6 text-muted">{tool.bestFor}</span>
+                <span className="whitespace-pre-line text-sm leading-6 text-muted">
+                  {tool.bestFor}
+                </span>
               </li>
             ))}
           </ul>
@@ -207,65 +203,6 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
           </div>
         </section>
       )}
-
-      <section id="policy" className="border-b border-border bg-card">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:px-6 lg:grid-cols-2">
-          <Image
-            src={BRAND.deskImage}
-            alt={t.home.deskAlt}
-            width={1536}
-            height={1024}
-            className="w-full rounded-lg border border-border"
-          />
-          <div>
-            <h2 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-              {t.home.policyTitle}
-            </h2>
-            <ul className="mt-6 space-y-3 text-sm leading-6 text-muted">
-              {t.home.policyItems.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <Link
-              href={localeHref(locale, "/disclosure")}
-              className="mt-6 inline-block text-sm font-semibold text-primary underline underline-offset-4"
-            >
-              {t.home.policyLink}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section id="cheat-sheet" className="bg-foreground text-background">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:items-center">
-          <div>
-            <h2 className="font-heading text-2xl font-semibold tracking-tight text-background sm:text-3xl">
-              {t.home.cheatTitle}
-            </h2>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-background/80">{t.home.cheatLead}</p>
-            <p className="mt-4 text-sm text-background/80">
-              <Link
-                href={localeHref(locale, "/cheat-sheet")}
-                className="underline decoration-accent underline-offset-4"
-              >
-                {t.home.cheatRead}
-              </Link>{" "}
-              {t.home.cheatJoinNote}
-            </p>
-          </div>
-          <div className="rounded-lg border border-background/20 bg-background/5 p-6">
-            <LeadForm
-              tone="dark"
-              cta={t.cheat.formCta}
-              strings={t.form}
-              successMessage={t.cheat.formSuccess}
-              successHref={localeHref(locale, "/cheat-sheet")}
-              successLabel={t.home.ctaSecondary}
-            />
-            <p className="mt-4 text-xs leading-5 text-background/70">{t.home.cheatFormNote}</p>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SP_THEME_VERSION', '1.3.4' );
+define( 'SP_THEME_VERSION', '1.3.17' );
 
 require get_template_directory() . '/inc/copy.php';
 require get_template_directory() . '/inc/data.php';
@@ -136,7 +136,7 @@ function sp_tool_fields(): array {
 		'logo_url'      => array( 'label' => 'ロゴ画像URL', 'type' => 'url', 'help' => '空欄なら名前だけを表示します。' ),
 		'reviewed'      => array( 'label' => '検証日（例: 2026-09-20）', 'type' => 'text' ),
 		'best_for'      => array( 'label' => '向いている人', 'type' => 'textarea' ),
-		'standout'      => array( 'label' => '強み', 'type' => 'textarea' ),
+		'standout'      => array( 'label' => 'メリット', 'type' => 'textarea' ),
 		'watch_for'     => array( 'label' => '注意点', 'type' => 'textarea' ),
 		'verdict'       => array( 'label' => '評価', 'type' => 'textarea' ),
 		'pairs_with'    => array( 'label' => '併用しやすいツール（スラッグをカンマ区切り 例: notion, zapier）', 'type' => 'text' ),
@@ -390,7 +390,6 @@ function sp_llms_text(): string {
 	$lines[] = '## ページ';
 	$pages = array(
 		'ツール一覧' => get_post_type_archive_link( 'sp_tool' ),
-		'チートシート' => sp_page_url( 'cheat-sheet' ),
 		'このサイトについて' => sp_page_url( 'about' ),
 		'アフィリエイト開示' => sp_page_url( 'disclosure' ),
 		'プライバシーポリシー' => sp_page_url( 'privacy' ),
@@ -424,7 +423,6 @@ function sp_default_nav_items(): array {
 	return array(
 		array( 'label' => sp_t( 'nav.tools' ), 'url' => get_post_type_archive_link( 'sp_tool' ), 'target' => array( 'type' => 'archive' ) ),
 		array( 'label' => sp_t( 'nav.stacks' ), 'url' => home_url( '/#stacks' ), 'target' => array( 'type' => 'custom', 'url' => home_url( '/#stacks' ) ) ),
-		array( 'label' => sp_t( 'nav.cheatSheet' ), 'url' => sp_page_url( 'cheat-sheet' ), 'target' => array( 'type' => 'page', 'slug' => 'cheat-sheet' ) ),
 		array( 'label' => sp_t( 'nav.blog' ), 'url' => sp_page_url( 'blog' ), 'target' => array( 'type' => 'page', 'slug' => 'blog' ) ),
 		array( 'label' => sp_t( 'nav.about' ), 'url' => sp_page_url( 'about' ), 'target' => array( 'type' => 'page', 'slug' => 'about' ) ),
 	);
@@ -433,7 +431,6 @@ function sp_default_nav_items(): array {
 function sp_default_footer_items(): array {
 	return array(
 		array( 'label' => sp_t( 'nav.directory' ), 'url' => get_post_type_archive_link( 'sp_tool' ), 'target' => array( 'type' => 'archive' ) ),
-		array( 'label' => sp_t( 'nav.workflowSheet' ), 'url' => sp_page_url( 'cheat-sheet' ), 'target' => array( 'type' => 'page', 'slug' => 'cheat-sheet' ) ),
 		array( 'label' => sp_t( 'nav.blog' ), 'url' => sp_page_url( 'blog' ), 'target' => array( 'type' => 'page', 'slug' => 'blog' ) ),
 		array( 'label' => sp_t( 'nav.aboutMethodology' ), 'url' => sp_page_url( 'about' ), 'target' => array( 'type' => 'page', 'slug' => 'about' ) ),
 		array( 'label' => sp_t( 'nav.disclosure' ), 'url' => sp_page_url( 'disclosure' ), 'target' => array( 'type' => 'page', 'slug' => 'disclosure' ) ),
@@ -451,13 +448,20 @@ function sp_nav_fallback( array $args = array() ): void {
 }
 
 /* ---------------------------------------------------------------
- * フォーム（メール登録 / お問い合わせ）
+ * フォーム（お問い合わせのみ）
+ *
+ * メール登録フォームは 2026-09-26 に廃止しました（チートシートのページと
+ * トップページの案内を外したため）。残るのは /about/ の訂正・質問フォームだけです。
  * ------------------------------------------------------------- */
-function sp_render_form( string $variant = 'email', string $tone = 'light' ): string {
+/**
+ * お問い合わせフォーム（このサイトで唯一のフォーム）。
+ *
+ * 2026-09-26: メール登録用の variant（トップページの帯とチートシートで使っていた
+ * もの）は廃止しました。ここに出すのは名前・メール・本文の3項目だけです。
+ */
+function sp_render_form(): string {
 	$state   = isset( $_GET['sp_lead'] ) ? sanitize_key( wp_unslash( $_GET['sp_lead'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$dark    = 'dark' === $tone;
 	$form_id = 'sp-lead-' . wp_unique_id();
-	$classes = 'sp-form' . ( $dark ? ' sp-form--dark' : '' );
 	$action  = esc_url( admin_url( 'admin-post.php' ) );
 	// サブディレクトリ設置でもパスが二重にならないよう、リクエストURIではなく
 	// WordPress が解決したパスから組み立てる（クエリは引き継がない）。
@@ -465,71 +469,42 @@ function sp_render_form( string $variant = 'email', string $tone = 'light' ): st
 	$current = esc_url_raw( home_url( '/' . ltrim( (string) ( $wp->request ?? '' ), '/' ) ) );
 
 	if ( 'ok' === $state ) {
-		$message = 'email' === $variant ? sp_t( 'cheat.formSuccess' ) : sp_t( 'about.formSuccess' );
-		$link    = 'email' === $variant
-			? sprintf(
-				'<p class="sp-small"><a href="%s">%s</a></p>',
-				esc_url( get_post_type_archive_link( 'sp_tool' ) ),
-				esc_html( sp_t( 'cheat.formHrefLabel' ) )
-			)
-			: '';
-		$wrap = $dark ? ' style="color:var(--sp-background)"' : '';
 		return sprintf(
-			'<div class="sp-form"%s><p class="sp-h3">%s</p>%s</div>',
-			$wrap,
-			esc_html( $message ),
-			$link
+			'<div class="sp-form"><p class="sp-h3">%s</p></div>',
+			esc_html( sp_t( 'about.formSuccess' ) )
 		);
 	}
 
-	$html  = sprintf( '<form class="%s" method="post" action="%s">', esc_attr( $classes ), $action );
+	$html  = sprintf( '<form class="sp-form" method="post" action="%s">', $action );
 	$html .= '<input type="hidden" name="action" value="sp_lead" />';
-	$html .= sprintf( '<input type="hidden" name="sp_variant" value="%s" />', esc_attr( $variant ) );
 	$html .= sprintf( '<input type="hidden" name="sp_redirect" value="%s" />', esc_attr( $current ) );
 	// ハニーポット（人には見えない。ボットが埋めたら破棄する）
 	$html .= '<p class="sp-visually-hidden"><label for="' . esc_attr( $form_id . '-hp' ) . '">入力しないでください</label><input id="' . esc_attr( $form_id . '-hp' ) . '" type="text" name="sp_hp" value="" tabindex="-1" autocomplete="off" /></p>';
 
-	if ( 'message' === $variant ) {
-		$html .= '<div class="sp-form__row">';
-		$html .= sprintf(
-			'<div class="sp-field"><label class="sp-label" for="%1$s-name">%2$s</label><input class="sp-input" id="%1$s-name" type="text" name="sp_name" maxlength="200" placeholder="%3$s" /></div>',
-			esc_attr( $form_id ),
-			esc_html( sp_t( 'form.name' ) ),
-			esc_attr( sp_t( 'form.namePlaceholder' ) )
-		);
-		$html .= sprintf(
-			'<div class="sp-field"><label class="sp-label" for="%1$s-email">%2$s</label><input class="sp-input" id="%1$s-email" type="email" name="sp_email" required placeholder="%3$s" /></div>',
-			esc_attr( $form_id ),
-			esc_html( sp_t( 'form.email' ) ),
-			esc_attr( sp_t( 'form.emailPlaceholder' ) )
-		);
-		$html .= '</div>';
-		$html .= sprintf(
-			'<div class="sp-field" style="margin-top:0.75rem"><label class="sp-label" for="%1$s-message">%2$s</label><textarea class="sp-textarea" id="%1$s-message" name="sp_message" rows="5" required placeholder="%3$s"></textarea></div>',
-			esc_attr( $form_id ),
-			esc_html( sp_t( 'form.message' ) ),
-			esc_attr( sp_t( 'form.messagePlaceholder' ) )
-		);
-		$html .= sprintf(
-			'<p style="margin-top:0.75rem"><button class="sp-btn %s" type="submit">%s</button></p>',
-			$dark ? 'sp-btn--accent' : 'sp-btn--primary',
-			esc_html( sp_t( 'about.formCta' ) )
-		);
-	} else {
-		$html .= '<div class="sp-form__row sp-form__row--split">';
-		$html .= sprintf(
-			'<div class="sp-field"><label class="sp-label" for="%1$s-email">%2$s</label><input class="sp-input" id="%1$s-email" type="email" name="sp_email" required autocomplete="email" placeholder="%3$s" /></div>',
-			esc_attr( $form_id ),
-			esc_html( sp_t( 'form.email' ) ),
-			esc_attr( sp_t( 'form.emailPlaceholder' ) )
-		);
-		$html .= sprintf(
-			'<p style="margin:0"><button class="sp-btn %s" type="submit">%s</button></p>',
-			$dark ? 'sp-btn--accent' : 'sp-btn--primary',
-			esc_html( sp_t( 'cheat.formCta' ) )
-		);
-		$html .= '</div>';
-	}
+	$html .= '<div class="sp-form__row">';
+	$html .= sprintf(
+		'<div class="sp-field"><label class="sp-label" for="%1$s-name">%2$s</label><input class="sp-input" id="%1$s-name" type="text" name="sp_name" maxlength="200" placeholder="%3$s" /></div>',
+		esc_attr( $form_id ),
+		esc_html( sp_t( 'form.name' ) ),
+		esc_attr( sp_t( 'form.namePlaceholder' ) )
+	);
+	$html .= sprintf(
+		'<div class="sp-field"><label class="sp-label" for="%1$s-email">%2$s</label><input class="sp-input" id="%1$s-email" type="email" name="sp_email" required placeholder="%3$s" /></div>',
+		esc_attr( $form_id ),
+		esc_html( sp_t( 'form.email' ) ),
+		esc_attr( sp_t( 'form.emailPlaceholder' ) )
+	);
+	$html .= '</div>';
+	$html .= sprintf(
+		'<div class="sp-field" style="margin-top:0.75rem"><label class="sp-label" for="%1$s-message">%2$s</label><textarea class="sp-textarea" id="%1$s-message" name="sp_message" rows="5" required placeholder="%3$s"></textarea></div>',
+		esc_attr( $form_id ),
+		esc_html( sp_t( 'form.message' ) ),
+		esc_attr( sp_t( 'form.messagePlaceholder' ) )
+	);
+	$html .= sprintf(
+		'<p style="margin-top:0.75rem"><button class="sp-btn sp-btn--primary" type="submit">%s</button></p>',
+		esc_html( sp_t( 'about.formCta' ) )
+	);
 
 	if ( 'error' === $state ) {
 		$html .= sprintf( '<p class="sp-form__error">%s</p>', esc_html( sp_t( 'form.error' ) ) );
@@ -541,19 +516,25 @@ function sp_render_form( string $variant = 'email', string $tone = 'light' ): st
 	return $html;
 }
 
+/**
+ * 廃止した [sp_lead_form] の受け皿。
+ *
+ * メール登録フォームは 2026-09-26 に廃止しました。過去にこのショートコードを
+ * 書いたページが残っていても、その文字列がそのまま表示されないように、
+ * 何も出さずに終わります（ショートコード自体は登録したままにします）。
+ */
 function sp_shortcode_lead_form(): string {
-	return sp_render_form( 'email', 'light' );
+	return '';
 }
 add_shortcode( 'sp_lead_form', 'sp_shortcode_lead_form' );
 
 function sp_shortcode_contact_form(): string {
-	return sp_render_form( 'message', 'light' );
+	return sp_render_form();
 }
 add_shortcode( 'sp_contact_form', 'sp_shortcode_contact_form' );
 
 function sp_handle_lead() {
 	$redirect = isset( $_POST['sp_redirect'] ) ? esc_url_raw( wp_unslash( $_POST['sp_redirect'] ) ) : home_url( '/' );
-	$variant  = ( isset( $_POST['sp_variant'] ) && 'message' === $_POST['sp_variant'] ) ? 'message' : 'email';
 
 	// ハニーポットが埋まっていたら、成功したように見せて保存しない。
 	if ( ! empty( $_POST['sp_hp'] ) ) {
@@ -570,7 +551,7 @@ function sp_handle_lead() {
 		exit;
 	}
 	$message_length = function_exists( 'mb_strlen' ) ? mb_strlen( $message ) : strlen( $message );
-	if ( 'message' === $variant && $message_length < 10 ) {
+	if ( $message_length < 10 ) {
 		wp_safe_redirect( add_query_arg( 'sp_lead', 'short', $redirect ) );
 		exit;
 	}
@@ -585,14 +566,15 @@ function sp_handle_lead() {
 	);
 	if ( $lead_id && ! is_wp_error( $lead_id ) ) {
 		update_post_meta( $lead_id, 'sp_name', $name );
-		update_post_meta( $lead_id, 'sp_variant', $variant );
+		// 2026-09-26 以降、届くのはお問い合わせだけです（メール登録は廃止）。
+		update_post_meta( $lead_id, 'sp_variant', 'message' );
 		update_post_meta( $lead_id, 'sp_source', $redirect );
 	}
 
 	$subject = sprintf(
 		'【%s】%s',
 		wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
-		'message' === $variant ? 'お問い合わせ' : 'メール登録'
+		'お問い合わせ'
 	);
 	$body = "メール: {$email}\n";
 	if ( $name ) {
@@ -609,3 +591,29 @@ function sp_handle_lead() {
 }
 add_action( 'admin_post_nopriv_sp_lead', 'sp_handle_lead' );
 add_action( 'admin_post_sp_lead', 'sp_handle_lead' );
+
+/* ---------------------------------------------------------------
+ * 廃止したURLの受け皿
+ * ------------------------------------------------------------- */
+/**
+ * 廃止した /cheat-sheet/ を、ツール一覧へ301で送る。
+ *
+ * ページ本体は inc/health.php の点検がゴミ箱へ移すため、そのままでは404に
+ * なります。古いリンクや検索結果から来た読者を、いちばん近い一覧へ案内します。
+ */
+function sp_redirect_retired_paths(): void {
+	if ( is_admin() ) {
+		return;
+	}
+	global $wp;
+	$path = trim( (string) ( $wp->request ?? '' ), '/' );
+	if ( 'cheat-sheet' !== $path ) {
+		return;
+	}
+	$target = get_post_type_archive_link( 'sp_tool' );
+	if ( $target ) {
+		wp_safe_redirect( $target, 301 );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'sp_redirect_retired_paths' );

@@ -2,7 +2,7 @@
 /**
  * テーマ有効化時の初期データ投入。
  *
- * ツール10件・カテゴリ5件・固定ページ6枚・メニューを作ります。
+ * ツール10件・カテゴリ5件・固定ページ5枚・メニューを作ります。
  * すでに同じスラッグがあれば作り直しません（何度有効化しても重複しません）。
  */
 if ( ! defined( 'ABSPATH' ) ) {
@@ -126,7 +126,8 @@ function sp_seed_page( string $slug, string $title, string $content = '', string
 function sp_seed_pages() {
 	$home_id = sp_seed_page( 'home', 'ホーム' );
 	sp_seed_page( 'blog', 'ブログ' );
-	sp_seed_page( 'cheat-sheet', sp_t( 'cheat.title' ), '', 'page-cheat-sheet.php' );
+	// ワークフロー・チートシートのページは 2026-09-26 に廃止しました。
+	// 新しくは作りません（設置済みサイトのページは inc/health.php がゴミ箱へ移します）。
 	$about_id      = sp_seed_page( 'about', sp_t( 'about.title' ), sp_page_content_about() );
 	sp_seed_page( 'disclosure', sp_t( 'disclosure.title' ), sp_page_content_disclosure() );
 	sp_seed_page( 'privacy', sp_t( 'privacy.title' ), sp_page_content_privacy() );

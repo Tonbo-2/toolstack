@@ -33,11 +33,9 @@ export interface NavItem {
 export type NavLabelKey =
   | "tools"
   | "stacks"
-  | "cheatSheet"
   | "blog"
   | "about"
   | "directory"
-  | "workflowSheet"
   | "aboutMethodology"
   | "disclosure"
   | "privacy";
@@ -54,7 +52,6 @@ export type NavLabelKey =
 export const NAV_ITEMS: NavItem[] = [
   { labelKey: "tools", label: "ツール", href: "/tools" },
   { labelKey: "stacks", label: "組み合わせ", href: "/#stacks" },
-  { labelKey: "cheatSheet", label: "チートシート", href: "/cheat-sheet" },
   { labelKey: "blog", label: "ブログ", href: "/blog" },
   { labelKey: "about", label: "このサイト", href: "/about" },
 ];
@@ -62,7 +59,6 @@ export const NAV_ITEMS: NavItem[] = [
 /** Footer-only links (legal pages etc.). Same rules as NAV_ITEMS. */
 export const FOOTER_ITEMS: NavItem[] = [
   { labelKey: "directory", label: "ツール一覧", href: "/tools" },
-  { labelKey: "workflowSheet", label: "ワークフロー・チートシート", href: "/cheat-sheet" },
   { labelKey: "blog", label: "ブログ", href: "/blog" },
   { labelKey: "aboutMethodology", label: "運営方針と検証手法", href: "/about" },
   { labelKey: "disclosure", label: "アフィリエイト開示", href: "/disclosure" },
@@ -77,7 +73,6 @@ export const FOOTER_ITEMS: NavItem[] = [
  */
 export const ROUTE_NAMES: Record<string, string> = {
   tools: "ツール一覧",
-  "cheat-sheet": "ワークフロー・チートシート",
   about: "このサイトについて",
   disclosure: "アフィリエイト開示",
   privacy: "プライバシーポリシー",

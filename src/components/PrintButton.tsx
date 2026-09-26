@@ -1,6 +1,11 @@
 "use client";
 
-/** Print / save-as-PDF trigger for the cheat sheet. Hidden when printing. */
+/**
+ * Print / save-as-PDF trigger. Hidden when printing.
+ *
+ * 2026-09-26 のチートシート廃止で、いまはどこからも使っていません。この環境では
+ * ファイルを削除できないため残しています（印刷するページを作るときに使えます）。
+ */
 export function PrintButton({ label = "Print or save as PDF" }: { label?: string }) {
   return (
     <button

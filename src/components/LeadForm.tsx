@@ -8,10 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 /**
  * Lead capture, in two shapes:
- *  - variant "email"   → the cheat-sheet / list signup on the home page
+ *  - variant "email"   → a one-field signup (2026-09-26 のチートシート廃止で、
+ *                        サイト内ではいまどこからも使っていません)
  *  - variant "message" → the correction and question form on /about
- * `tone="dark"` styles it for the dark cheat-sheet band; default is the light
- * card surface. Both post to the same DB-backed route (`/api/leads`).
+ * `tone="dark"` styles it for a dark band; default is the light card surface.
+ * Both post to the same DB-backed route (`/api/leads`).
  *
  * Every visible string comes in as `strings` from the server page's dictionary,
  * so the form speaks the language of the page it sits on.
