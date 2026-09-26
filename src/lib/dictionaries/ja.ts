@@ -82,7 +82,7 @@ export const ja = {
         body: "評価は、機能・料金・使いやすさなどの公開情報をもとに書いています。また、一部のリンクから申し込まれると、運営者に報酬が入ることがあります。",
       },
     ],
-    directoryTitle: "一覧の全体像",
+    directoryTitle: "ツール一覧",
     directoryLead:
       "{categories}カテゴリ・{tools}ツール。向いている業務と、導入・利用にかかるコストも書いています。",
     seeAll: "{tools}件すべてを見る",
