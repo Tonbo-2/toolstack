@@ -172,20 +172,10 @@ function sp_page_content_disclosure(): string {
 	}
 	$html .= '</ul>';
 	$html .= '<p>' . esc_html( sp_t( 'disclosure.unchangedOutro' ) ) . '</p>';
-	$html .= '<h2>' . esc_html( sp_t( 'disclosure.spotTitle' ) ) . '</h2>';
-	$html .= '<p>' . esc_html( sp_t( 'disclosure.spotBefore' ) ) . '<code>' . esc_html( sp_t( 'disclosure.spotCode' ) ) . '</code>' . esc_html( sp_t( 'disclosure.spotAfter' ) ) . '</p>';
-	$html .= '<h2>' . esc_html( sp_t( 'disclosure.notDoTitle' ) ) . '</h2>';
-	$html .= '<ul>';
-	foreach ( sp_copy_path( 'disclosure.notDoItems' ) as $item ) {
-		$html .= '<li>' . esc_html( $item ) . '</li>';
-	}
-	$html .= '</ul>';
 	$html .= '<h2>' . esc_html( sp_t( 'disclosure.questionsTitle' ) ) . '</h2>';
 	$html .= '<p>' . esc_html( sp_t( 'disclosure.questionsBefore' ) );
 	$html .= '<a href="' . esc_url( sp_page_url( 'about' ) ) . '">' . esc_html( sp_t( 'disclosure.questionsLink' ) ) . '</a>';
-	$html .= esc_html( sp_t( 'disclosure.questionsMid' ) );
-	$html .= '<a href="' . esc_url( sp_page_url( 'privacy' ) ) . '">' . esc_html( sp_t( 'disclosure.questionsPrivacyLink' ) ) . '</a>';
-	$html .= esc_html( sp_t( 'disclosure.questionsAfter' ) ) . '</p>';
+	$html .= esc_html( sp_t( 'disclosure.questionsMid' ) ) . '</p>';
 	return $html;
 }
 
@@ -197,21 +187,223 @@ function sp_page_content_privacy(): string {
 		$html .= '<li><strong>' . esc_html( $item['lead'] ) . '</strong>' . esc_html( $item['body'] ) . '</li>';
 	}
 	$html .= '</ul>';
-	$html .= '<h2>' . esc_html( sp_t( 'privacy.notDoneTitle' ) ) . '</h2>';
-	$html .= '<ul>';
-	foreach ( sp_copy_path( 'privacy.notDoneItems' ) as $item ) {
-		$html .= '<li>' . esc_html( $item ) . '</li>';
-	}
-	$html .= '</ul>';
 	$html .= '<h2>' . esc_html( sp_t( 'privacy.outboundTitle' ) ) . '</h2>';
 	$html .= '<p>' . esc_html( sp_t( 'privacy.outboundBody' ) ) . '</p>';
 	$html .= '<h2>' . esc_html( sp_t( 'privacy.removalTitle' ) ) . '</h2>';
 	$html .= '<p>' . esc_html( sp_t( 'privacy.removalBefore' ) );
 	$html .= '<a href="' . esc_url( sp_page_url( 'about' ) ) . '">' . esc_html( sp_t( 'privacy.removalLink' ) ) . '</a>';
 	$html .= esc_html( sp_t( 'privacy.removalAfter' ) ) . '</p>';
-	$html .= '<h2>' . esc_html( sp_t( 'privacy.changesTitle' ) ) . '</h2>';
-	$html .= '<p>' . esc_html( sp_t( 'privacy.changesBody' ) ) . '</p>';
 	return $html;
+}
+
+/**
+ * テーマが本文を持つ固定ページ（スラッグ => ページ名と本文の出どころ）。
+ *
+ * 「ホーム」「ブログ」の2枚は、本文をテーマが持っていない（WordPress 側の設定で
+ * 決まる）ため、入れ替えの対象に入れていません。
+ */
+function sp_page_copy_targets(): array {
+	return array(
+		'about'      => array( 'title' => 'about.title', 'content' => 'sp_page_content_about' ),
+		'disclosure' => array( 'title' => 'disclosure.title', 'content' => 'sp_page_content_disclosure' ),
+		'privacy'    => array( 'title' => 'privacy.title', 'content' => 'sp_page_content_privacy' ),
+	);
+}
+
+/**
+ * 固定ページの本文とページ名を、テーマの新しい内容に合わせる（版ごとに1回）。
+ *
+ * 対象は「このサイトについて」「アフィリエイト開示」「プライバシーポリシー」の3枚です。
+ * 本文は有効化のときにデータベースへ入るため、あとから inc/copy.php や
+ * sp_page_content_*() を直しても、設置済みのサイトには入りません。そのため、
+ * ここで入れ替えます（これまでは、管理画面から1ページずつ手で書き換えていただいて
+ * いました）。
+ *
+ * 入れ替えるのは、編集画面で書き換えられていないページだけです。書き換えたページには
+ * 印が付いているので（functions.php の sp_page_copy_edited_key()。保存のときに
+ * sp_note_page_copy_edit() が付けます）、そのページはそのまま残し、件数だけお知らせに
+ * 出します。
+ *
+ * 版は SP_PAGE_COPY_VERSION（functions.php）。inc/copy.php の文や本文の組み立てを
+ * 変えたら、その値を上げてください。戻り値は
+ * array( 'body' => 入れ替えたページ数, 'title' => 直したページ名の数,
+ *        'kept' => 手を入れたままにしたページ数, 'missing' => 見つからなかったページ数 )。
+ */
+function sp_sync_page_content(): array {
+	$result = array(
+		'body'    => 0,
+		'title'   => 0,
+		'kept'    => 0,
+		'missing' => 0,
+	);
+
+	if ( SP_PAGE_COPY_VERSION === (string) get_option( 'sp_page_copy_version' ) ) {
+		return $result; // この版は反映済み。
+	}
+
+	sp_copy_sync_running( true );
+
+	foreach ( sp_page_copy_targets() as $slug => $page_data ) {
+		$page = get_page_by_path( $slug );
+		if ( ! $page || 'trash' === $page->post_status ) {
+			$result['missing']++; // オーナーが消したページは、作り直しません。
+			continue;
+		}
+
+		if ( get_post_meta( (int) $page->ID, sp_page_copy_edited_key( $slug ), true ) ) {
+			$result['kept']++; // ご自身で書き換えたページは、そのままにします。
+			continue;
+		}
+
+		$wanted_title = (string) sp_t( (string) $page_data['title'] );
+		$wanted_body  = (string) call_user_func( $page_data['content'] );
+
+		$title_differs = ( '' !== $wanted_title ) && ( (string) $page->post_title !== $wanted_title );
+		$body_differs  = ( (string) $page->post_content !== $wanted_body );
+		if ( ! $title_differs && ! $body_differs ) {
+			continue; // すでに同じ内容。
+		}
+
+		$args = array( 'ID' => (int) $page->ID );
+		if ( $title_differs ) {
+			$args['post_title'] = $wanted_title;
+		}
+		if ( $body_differs ) {
+			$args['post_content'] = $wanted_body;
+		}
+		wp_update_post( $args );
+
+		if ( $title_differs ) {
+			$result['title']++;
+		}
+		if ( $body_differs ) {
+			$result['body']++;
+		}
+	}
+
+	sp_copy_sync_running( false );
+	update_option( 'sp_page_copy_version', SP_PAGE_COPY_VERSION, false );
+
+	return $result;
+}
+
+/**
+ * 固定ページを編集画面で書き換えたら印を付ける（入れ替えの対象から外します）。
+ *
+ * 保存の前後を比べられる post_updated を使います。テーマが入れ替えている最中は
+ * sp_copy_sync_running() で区別し、印を付けません。文が変わっていない保存
+ * （更新ボタンを押しただけ）と、テーマと同じ文に戻しただけの保存でも付けません。
+ */
+function sp_note_page_copy_edit( $post_id, $post_after, $post_before ) {
+	if ( sp_copy_sync_running() || 'page' !== $post_after->post_type ) {
+		return;
+	}
+	$targets = sp_page_copy_targets();
+	$slug    = (string) $post_after->post_name;
+	if ( ! isset( $targets[ $slug ] ) ) {
+		return; // 入れ替えの対象ではないページ。
+	}
+	if ( 'auto-draft' === $post_after->post_status || 'trash' === $post_after->post_status ) {
+		return;
+	}
+
+	$body_changed  = (string) $post_after->post_content !== (string) $post_before->post_content;
+	$title_changed = (string) $post_after->post_title !== (string) $post_before->post_title;
+	if ( ! $body_changed && ! $title_changed ) {
+		return;
+	}
+
+	// テーマが入れる文と同じに戻しただけなら、印は付けません。
+	$wanted_body  = (string) call_user_func( $targets[ $slug ]['content'] );
+	$wanted_title = (string) sp_t( (string) $targets[ $slug ]['title'] );
+	$body_same    = ( ! $body_changed ) || ( (string) $post_after->post_content === $wanted_body );
+	$title_same   = ( ! $title_changed ) || ( (string) $post_after->post_title === $wanted_title );
+	if ( $body_same && $title_same ) {
+		return;
+	}
+
+	update_post_meta( (int) $post_id, sp_page_copy_edited_key( $slug ), 1 );
+}
+add_action( 'post_updated', 'sp_note_page_copy_edit', 10, 3 );
+
+/**
+ * ツールの説明文を、テーマの新しい内容に合わせる（版ごとに1回）。
+ *
+ * ツールの名前と説明文（向いている人・メリット・注意点・評価）は、有効化の
+ * ときにデータベースへ入ります。あとからテーマ側の文言を直しても、設置済みの
+ * サイトには入りません。そのため、ここで入れ替えます（これまでは、1つずつ
+ * 管理画面から手で書き換えていただいていました）。
+ *
+ * 入れ替えるのは、編集画面で書き換えられていない欄だけです。書き換えた欄には
+ * 印が付いているので（functions.php の sp_tool_copy_edited_key() と
+ * 'sp_title_edited'）、その欄はそのまま残し、件数だけお知らせに出します。
+ * 成果リンク・ベンダーURL・ロゴ・検証日・併用ツールは、管理画面が正なので
+ * ここでは触りません。
+ *
+ * 版は SP_TOOL_COPY_VERSION（functions.php）。inc/data.php の文言を変えたら、
+ * その値を上げてください。戻り値は
+ * array( 'copy' => 入れ替えた欄の数, 'title' => 直した名前の数,
+ *        'kept' => 手を入れたままにした欄の数, 'missing' => 見つからなかったツールの数 )。
+ */
+function sp_sync_tool_copy(): array {
+	$result = array(
+		'copy'    => 0,
+		'title'   => 0,
+		'kept'    => 0,
+		'missing' => 0,
+	);
+
+	if ( SP_TOOL_COPY_VERSION === (string) get_option( 'sp_tool_copy_version' ) ) {
+		return $result; // この版は反映済み。
+	}
+
+	sp_copy_sync_running( true );
+
+	foreach ( sp_tools() as $tool ) {
+		$post = sp_tool_by_slug( (string) $tool['slug'] );
+		if ( ! $post ) {
+			$result['missing']++; // オーナーが消したツールは、作り直しません。
+			continue;
+		}
+		$post_id = (int) $post->ID;
+
+		// 名前。編集画面で変えていたら触りません（Kit の「（旧ConvertKit）」など）。
+		if ( ! get_post_meta( $post_id, 'sp_title_edited', true )
+			&& (string) $post->post_title !== (string) $tool['name']
+		) {
+			wp_update_post(
+				array(
+					'ID'         => $post_id,
+					'post_title' => (string) $tool['name'],
+				)
+			);
+			$result['title']++;
+		}
+
+		foreach ( sp_tool_copy_fields() as $meta_key => $source_key ) {
+			$current = (string) get_post_meta( $post_id, $meta_key, true );
+			$wanted  = (string) $tool[ $source_key ];
+
+			if ( get_post_meta( $post_id, sp_tool_copy_edited_key( $meta_key ), true ) ) {
+				if ( $current !== $wanted ) {
+					$result['kept']++; // ご自身で書き換えた欄は、そのままにします。
+				}
+				continue;
+			}
+
+			if ( $current === $wanted ) {
+				continue; // すでに同じ内容。
+			}
+
+			update_post_meta( $post_id, $meta_key, $wanted );
+			$result['copy']++;
+		}
+	}
+
+	sp_copy_sync_running( false );
+	update_option( 'sp_tool_copy_version', SP_TOOL_COPY_VERSION, false );
+
+	return $result;
 }
 
 function sp_seed_menus() {

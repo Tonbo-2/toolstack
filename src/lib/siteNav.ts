@@ -50,19 +50,19 @@ export type NavLabelKey =
  * renders. Putting a locale in here instead pins the nav to one language.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { labelKey: "tools", label: "ツール", href: "/tools" },
+  { labelKey: "tools", label: "ツール一覧", href: "/tools" },
   { labelKey: "stacks", label: "組み合わせ", href: "/#stacks" },
   { labelKey: "blog", label: "ブログ", href: "/blog" },
-  { labelKey: "about", label: "このサイト", href: "/about" },
+  { labelKey: "about", label: "このサイトについて", href: "/about" },
 ];
 
 /** Footer-only links (legal pages etc.). Same rules as NAV_ITEMS. */
 export const FOOTER_ITEMS: NavItem[] = [
   { labelKey: "directory", label: "ツール一覧", href: "/tools" },
   { labelKey: "blog", label: "ブログ", href: "/blog" },
-  { labelKey: "aboutMethodology", label: "運営方針と検証手法", href: "/about" },
+  { labelKey: "aboutMethodology", label: "運営方針と評価方法", href: "/about" },
   { labelKey: "disclosure", label: "アフィリエイト開示", href: "/disclosure" },
-  { labelKey: "privacy", label: "プライバシー", href: "/privacy" },
+  { labelKey: "privacy", label: "プライバシーポリシー", href: "/privacy" },
 ];
 
 /**

@@ -58,7 +58,7 @@ export async function generateMetadata({
   // The panel (Manage → SEO & GEO) holds the site description; the site serves a
   // single language, so there is no second copy to choose between.
   const description = SITE_DESCRIPTION;
-  // "StackProof | 仕事で使えるAIツールの比較・レビュー" — the brand plus what the
+  // "ToolStack | 仕事で使えるAIツールの比較・レビュー" — the brand plus what the
   // site is, taken from the dictionary so the title and the hero stay in step.
   const homeTitle = composeHomeTitle(brand, t.meta.home.title);
   const faviconUrl = process.env.NEXT_PUBLIC_FAVICON_URL;

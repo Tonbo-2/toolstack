@@ -51,28 +51,6 @@ export default async function DisclosurePage({ params }: { params: Promise<{ loc
 
             <div>
               <h2 className="font-heading text-xl font-semibold tracking-tight">
-                {t.disclosure.spotTitle}
-              </h2>
-              <p className="mt-3 text-muted">
-                {t.disclosure.spotBefore}
-                <span className="font-mono text-xs">{t.disclosure.spotCode}</span>
-                {t.disclosure.spotAfter}
-              </p>
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl font-semibold tracking-tight">
-                {t.disclosure.notDoTitle}
-              </h2>
-              <ul className="mt-3 space-y-2 text-muted">
-                {t.disclosure.notDoItems.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl font-semibold tracking-tight">
                 {t.disclosure.questionsTitle}
               </h2>
               <p className="mt-3 text-muted">
@@ -84,13 +62,6 @@ export default async function DisclosurePage({ params }: { params: Promise<{ loc
                   {t.disclosure.questionsLink}
                 </Link>
                 {t.disclosure.questionsMid}
-                <Link
-                  href={localeHref(locale, "/privacy")}
-                  className="text-primary underline underline-offset-4"
-                >
-                  {t.disclosure.questionsPrivacyLink}
-                </Link>
-                {t.disclosure.questionsAfter}
               </p>
             </div>
           </div>

@@ -13,8 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** ブランド資産（ロゴ・アイコン・写真）。ロゴはカスタマイザーで差し替え可。 */
 function sp_brand(): array {
 	return array(
-		'name'      => 'StackProof',
-		'logo'      => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/33719bfe29afd94a.webp',
+		'name'      => 'ToolStack',
+		'logo'      => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/3526382475e7067d.webp',
 		'icon'      => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/3ad674281244d5ab.webp',
 		'heroImage' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/d974269c75eee95b.webp',
 		// トップの「このサイトにないもの」を外したため、いまは未使用（2026-09-26）。
@@ -47,7 +47,7 @@ function sp_categories(): array {
 function sp_tools(): array {
 	return array(
 		array(
-			'slug' => 'notion', 'name' => 'Notion', 'category' => 'workspace',
+			'slug' => 'notion', 'name' => 'Notion', 'reading' => 'ノーション', 'category' => 'workspace',
 			'url' => 'https://www.notion.so',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/5640c98062d12b62.png',
 			'best_for' => 'メモ作成、タスク管理、社内Wiki、データベースなどの機能を一つにまとめたクラウド型のオールインワン・ワークスペース。
@@ -59,7 +59,7 @@ function sp_tools(): array {
 			'pairs_with' => 'zapier, otter-ai', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'zapier', 'name' => 'Zapier', 'category' => 'automation',
+			'slug' => 'zapier', 'name' => 'Zapier', 'reading' => 'ザピアー', 'category' => 'automation',
 			'url' => 'https://zapier.com',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/23ae37879fbb05be.png',
 			'best_for' => 'さまざまなWebサービスやアプリをノーコードで連携させ、定型業務を自動化するクラウドツール（iPaaS）。
@@ -71,7 +71,7 @@ function sp_tools(): array {
 			'pairs_with' => 'notion, kit', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'make', 'name' => 'Make', 'category' => 'automation',
+			'slug' => 'make', 'name' => 'Make', 'reading' => 'メイク', 'category' => 'automation',
 			'url' => 'https://www.make.com',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/3c847799933a657d.jpg',
 			'best_for' => 'プログラミング知識がなくても、さまざまなアプリやWebサービスを視覚的に連携させ、複雑な業務フローを自動化できるノーコードの業務自動化プラットフォーム（iPaaS）。
@@ -83,7 +83,7 @@ function sp_tools(): array {
 			'pairs_with' => 'zapier, notion', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'jasper', 'name' => 'Jasper', 'category' => 'writing-seo',
+			'slug' => 'jasper', 'name' => 'Jasper', 'reading' => 'ジャスパー', 'category' => 'writing-seo',
 			'url' => 'https://www.jasper.ai',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/3348b05b9e8b740e.png',
 			'best_for' => 'キーワードや指示をもとに、ブログ記事やSNS投稿などのマーケティングコンテンツをAIで生成できる、マーケティング特化型のAIプラットフォーム。
@@ -95,7 +95,7 @@ function sp_tools(): array {
 			'pairs_with' => 'surfer-seo, kit', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'writesonic', 'name' => 'Writesonic', 'category' => 'writing-seo',
+			'slug' => 'writesonic', 'name' => 'Writesonic', 'reading' => 'ライトソニック', 'category' => 'writing-seo',
 			'url' => 'https://writesonic.com',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/85aa54a0adf0098f.png',
 			'best_for' => 'AIを活用して、SEOを意識したブログ記事やマーケティング文章、広告コピーなどを効率よく作成・最適化できるAIコンテンツ制作ツール。
@@ -107,7 +107,7 @@ AIの下書きをそのまま使うのではなく、自分の視点や経験を
 			'pairs_with' => 'surfer-seo, kit', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'surfer-seo', 'name' => 'Surfer SEO', 'category' => 'writing-seo',
+			'slug' => 'surfer-seo', 'name' => 'Surfer SEO', 'reading' => 'サーファー・エスイーオー', 'category' => 'writing-seo',
 			'url' => 'https://surferseo.com',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/332cd34458cf503a.png',
 			'best_for' => '検索上位の競合ページを分析し、SEOに必要な要素を確認しながら、コンテンツの作成・最適化を支援するAI搭載のSEOプラットフォーム。
@@ -119,19 +119,19 @@ AIの下書きをそのまま使うのではなく、自分の視点や経験を
 			'pairs_with' => 'writesonic, jasper', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'kit', 'name' => 'Kit（旧ConvertKit）', 'category' => 'email',
+			'slug' => 'kit', 'name' => 'Kit（旧ConvertKit）', 'reading' => 'キット', 'category' => 'email',
 			'url' => 'https://kit.com',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/53257fe889d1112a.png',
-			'best_for' => 'メールマガジンの配信をはじめ、登録フォームやランディングページの作成、デジタル商品の販売など、クリエイターの情報発信と読者・顧客との関係づくりを支援するプラットフォーム。
+			'best_for' => '登録フォームやランディングページの作成、デジタル商品の販売などを通じて、クリエイターの情報発信と読者・顧客との関係づくりを支援するプラットフォーム。
 メールを中心に継続的な情報発信やファンとの関係づくりに取り組みたい個人や小規模チーム。',
 			'standout' => '登録直後のメール配信やタグ付けの設定が見やすく、全体がメール配信を中心に作られています。',
 			'watch_for' => 'メールマーケティングを中心としたサービスのため、営業管理の機能は限定的。
-商談の進捗管理や営業レポートなど、CRM（顧客関係管理）としての機能を重視する場合は別のツールを検討する必要がある。',
+案件の進捗管理や営業レポートなど、CRM（顧客関係管理）としての機能を重視する場合は別のツールを検討する必要がある。',
 			'verdict' => '情報発信そのものが成果につながるなら、最もすっきりした選択です。毎週書くつもりのリスト向けで、一度だけの告知には要りません。',
 			'pairs_with' => 'surfer-seo, notion', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'getresponse', 'name' => 'GetResponse', 'category' => 'email',
+			'slug' => 'getresponse', 'name' => 'GetResponse', 'reading' => 'ゲットレスポンス', 'category' => 'email',
 			'url' => 'https://www.getresponse.com',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/6e3d791f0876b07e.jpg',
 			'best_for' => 'メール配信を中心に、ランディングページ作成やマーケティング自動化（MA）などを一つにまとめたオールインワン型のデジタルマーケティングプラットフォーム。
@@ -143,7 +143,7 @@ AIの下書きをそのまま使うのではなく、自分の視点や経験を
 			'pairs_with' => 'writesonic, zapier', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'elevenlabs', 'name' => 'ElevenLabs', 'category' => 'audio-meetings',
+			'slug' => 'elevenlabs', 'name' => 'ElevenLabs', 'reading' => 'イレブンラボ', 'category' => 'audio-meetings',
 			'url' => 'https://elevenlabs.io',
 			'logo' => '',
 			'best_for' => '自然で表現力のある音声をAIで生成できる音声生成・音声合成プラットフォーム。
@@ -155,7 +155,7 @@ AIの下書きをそのまま使うのではなく、自分の視点や経験を
 			'pairs_with' => 'writesonic, notion', 'reviewed' => '2026-09-20',
 		),
 		array(
-			'slug' => 'otter-ai', 'name' => 'Otter.ai', 'category' => 'audio-meetings',
+			'slug' => 'otter-ai', 'name' => 'Otter.ai', 'reading' => 'オッター・エーアイ', 'category' => 'audio-meetings',
 			'url' => 'https://otter.ai',
 			'logo' => 'https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/9b8a90ec8dc37495.png',
 			'best_for' => '会議やインタビューの音声をリアルタイムでテキスト化し、自動で要約や話者の識別まで行うAIを活用した議事録・文字起こしツール。
@@ -176,14 +176,14 @@ function sp_stacks(): array {
 			'slug' => 'solo-consultant',
 			'name' => '個人向けの構成',
 			'for_who' => '顧客対応、通話、メールを1人で回している人。',
-			'why' => '顧客の資料と通話の記録が1か所にまとまり、専任の担当者を置かずに定期的な情報発信を続けられます。',
+			'why' => '顧客の資料と通話の記録が1か所にまとまり、担当者を増やさず定期的な情報発信を続けられます。',
 			'tools' => array( 'notion', 'otter-ai', 'kit' ),
 		),
 		array(
 			'slug' => 'content-led-startup',
-			'name' => '記事から商談につなげる構成',
-			'for_who' => '公開した記事をきっかけに商談が始まる小規模チーム。',
-			'why' => '下書き、検索順位のチェック、メールリストの管理が1つの流れになり、人を増やさずに毎週続けられます。',
+			'name' => '記事から問い合わせにつながる流れ',
+			'for_who' => '公開した記事をきっかけに案件が始まる小規模チーム。',
+			'why' => '記事の下書きから検索順位のチェック、メールリストの管理までをツールで分担し、人を増やさずに毎週の運用を続けられます。',
 			'tools' => array( 'writesonic', 'surfer-seo', 'kit' ),
 		),
 		array(

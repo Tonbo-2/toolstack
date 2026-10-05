@@ -1,6 +1,6 @@
 <?php
 /**
- * StackProof テーマの本体。
+ * ToolStack テーマの本体。
  *
  * 役割:
  *  - ツール（カスタム投稿タイプ sp_tool）とカテゴリの登録
@@ -13,7 +13,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SP_THEME_VERSION', '1.3.17' );
+define( 'SP_THEME_VERSION', '1.3.33' );
+
+/**
+ * ツールの説明文の版。
+ *
+ * inc/data.php のツールの文言（名前・向いている人・メリット・注意点・評価）を
+ * 変えたら、この値も上げてください。ツールの文言は有効化のときにデータベースへ
+ * 入るため、テーマのファイルを直しただけでは設置済みのサイトに入りません。
+ * 管理画面を開いたときの点検が、この値の変化を見て1回だけ入れ替えます
+ * （inc/seed.php の sp_sync_tool_copy()）。編集画面で書き換えられた欄は残します。
+ */
+define( 'SP_TOOL_COPY_VERSION', '2026-10-05' );
+
+/**
+ * 固定ページの本文の版。
+ *
+ * 「このサイトについて」「アフィリエイト開示」「プライバシーポリシー」の本文は、
+ * 有効化のときにデータベースへ入ります。あとからテーマのファイル（inc/copy.php と
+ * inc/seed.php の sp_page_content_*()）を直しても設置済みのサイトには入らないため、
+ * ツールの説明文と同じく、点検が版の変化を見て1回だけ入れ替えます
+ * （inc/seed.php の sp_sync_page_content()）。編集画面で書き換えられたページは残します。
+ *
+ * この3ページの文を変えたら、この値も上げてください。Next.js版
+ * （src/lib/dictionaries/ja.ts）と同じ内容にするのが決まりです。
+ */
+define( 'SP_PAGE_COPY_VERSION', '2026-09-27-6' );
 
 require get_template_directory() . '/inc/copy.php';
 require get_template_directory() . '/inc/data.php';
@@ -143,6 +168,55 @@ function sp_tool_fields(): array {
 	);
 }
 
+/**
+ * テーマ側の文言（inc/data.php）を正とする欄。メタキー => data.php のキー。
+ *
+ * ここに挙げた欄だけが、テーマを入れ替えたときの入れ替え対象です。
+ * 成果リンク・ベンダーURL・ロゴ・検証日・併用ツールは管理画面が正なので、
+ * テーマからは上書きしません（設置時に一度入るだけで、以後は触りません）。
+ */
+function sp_tool_copy_fields(): array {
+	return array(
+		'best_for'  => 'best_for',
+		'standout'  => 'standout',
+		'watch_for' => 'watch_for',
+		'verdict'   => 'verdict',
+	);
+}
+
+/**
+ * オーナーが編集画面で書き換えた欄に付ける印（メタキー => 印の名前）。
+ * 付いた欄は、テーマを入れ替えても入れ替えません。
+ */
+function sp_tool_copy_edited_key( string $meta_key ): string {
+	return 'sp_copy_edited_' . $meta_key;
+}
+
+/**
+ * オーナーが編集画面で書き換えた固定ページに付ける印（本文の入れ替え対象から外す）。
+ *
+ * ツールの説明文と同じ考え方です。付けた後は、テーマを入れ替えても
+ * そのページの本文とページ名は入れ替えません（inc/seed.php の
+ * sp_sync_page_content() と sp_note_page_copy_edit()）。
+ */
+function sp_page_copy_edited_key( string $slug ): string {
+	return 'sp_page_copy_edited_' . $slug;
+}
+
+/**
+ * いま説明文を入れ替えている最中かどうか。
+ *
+ * 入れ替えも投稿の保存として扱われるため、これで区別しないと「オーナーが
+ * 書き換えた」という印が付いてしまい、次の版で入れ替えられなくなります。
+ */
+function sp_copy_sync_running( ?bool $set = null ): bool {
+	static $running = false;
+	if ( null !== $set ) {
+		$running = $set;
+	}
+	return $running;
+}
+
 function sp_add_meta_box() {
 	add_meta_box( 'sp_tool_fields', 'レビュー項目（テーマ）', 'sp_render_meta_box', 'sp_tool', 'normal', 'high' );
 }
@@ -200,10 +274,42 @@ function sp_save_meta_box( $post_id, $post ) {
 		} else {
 			$value = sanitize_text_field( $raw );
 		}
+
+		/*
+		 * 説明文の欄を書き換えたときは印を付けます。テーマを入れ替えたときの
+		 * 入れ替え（sp_sync_tool_copy）は、印の付いた欄には触りません。
+		 * 成果リンクの入力など、ほかの欄の保存では印は付きません。
+		 */
+		if ( array_key_exists( $key, sp_tool_copy_fields() )
+			&& ! sp_copy_sync_running()
+			&& (string) $value !== (string) get_post_meta( $post_id, $key, true )
+		) {
+			update_post_meta( $post_id, sp_tool_copy_edited_key( $key ), 1 );
+		}
+
 		update_post_meta( $post_id, $key, $value );
 	}
 }
 add_action( 'save_post', 'sp_save_meta_box', 10, 2 );
+
+/**
+ * ツールの名前を編集画面で変えたら印を付ける（入れ替えの対象から外します）。
+ *
+ * 保存の前後を比べられる post_updated を使います。入れ替えの最中は
+ * sp_copy_sync_running() で区別し、印を付けません。
+ */
+function sp_note_tool_title_edit( $post_id, $post_after, $post_before ) {
+	if ( sp_copy_sync_running() || 'sp_tool' !== $post_after->post_type ) {
+		return;
+	}
+	if ( 'auto-draft' === $post_after->post_status || 'trash' === $post_after->post_status ) {
+		return;
+	}
+	if ( (string) $post_after->post_title !== (string) $post_before->post_title ) {
+		update_post_meta( (int) $post_id, 'sp_title_edited', 1 );
+	}
+}
+add_action( 'post_updated', 'sp_note_tool_title_edit', 10, 3 );
 
 /* ---------------------------------------------------------------
  * ツールの取得ヘルパー
@@ -312,6 +418,42 @@ function sp_tool_mark( $post_id, string $size = '' ) {
 		esc_attr( $size ? 'sp-mark--' . $size : '' ),
 		esc_url( $logo )
 	);
+}
+
+/**
+ * 正式な製品名を残して、日本語の読み方を表示用に添える。
+ * 投稿タイトルは更新せず、読み方は inc/data.php のスラッグ対応から取ります。
+ */
+function sp_tool_display_name( $post_id ): string {
+	static $readings = null;
+	if ( null === $readings ) {
+		$readings = array();
+		foreach ( sp_tools() as $tool ) {
+			if ( ! empty( $tool['reading'] ) ) {
+				$readings[ (string) $tool['slug'] ] = (string) $tool['reading'];
+			}
+		}
+	}
+
+	$name    = (string) get_post_field( 'post_title', $post_id );
+	$slug    = (string) get_post_field( 'post_name', $post_id );
+	$reading = (string) ( $readings[ $slug ] ?? '' );
+	if ( '' === $name || '' === $reading ) {
+		return $name;
+	}
+
+	// すでに読み方が入力されているタイトルでは重ねて表示しません。
+	$quoted_reading = preg_quote( $reading, '/' );
+	if ( preg_match( '/(?:（|\()' . $quoted_reading . '(?:、旧[^）)]*)?(?:）|\))$/u', $name ) ) {
+		return $name;
+	}
+
+	// Kit の正式な旧名表記は読み方の後ろに残します。
+	if ( preg_match( '/^(.*?)（旧(.+?)）$/u', $name, $former_name ) ) {
+		return $former_name[1] . '（' . $reading . '、旧' . $former_name[2] . '）';
+	}
+
+	return $name . '（' . $reading . '）';
 }
 
 /** 固定ページのURL（無ければトップ）。 */
@@ -481,7 +623,7 @@ function sp_render_form(): string {
 	// ハニーポット（人には見えない。ボットが埋めたら破棄する）
 	$html .= '<p class="sp-visually-hidden"><label for="' . esc_attr( $form_id . '-hp' ) . '">入力しないでください</label><input id="' . esc_attr( $form_id . '-hp' ) . '" type="text" name="sp_hp" value="" tabindex="-1" autocomplete="off" /></p>';
 
-	$html .= '<div class="sp-form__row">';
+	$html .= '<div class="sp-form__row sp-form__row--split">';
 	$html .= sprintf(
 		'<div class="sp-field"><label class="sp-label" for="%1$s-name">%2$s</label><input class="sp-input" id="%1$s-name" type="text" name="sp_name" maxlength="200" placeholder="%3$s" /></div>',
 		esc_attr( $form_id ),

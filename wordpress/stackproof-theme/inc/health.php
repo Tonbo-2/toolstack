@@ -48,7 +48,7 @@ function sp_probe_url( string $url, bool $fresh ): int {
 			'timeout'     => 10,
 			'redirection' => 3,
 			'sslverify'   => false,
-			'user-agent'  => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url( '/' ) . ' (StackProof theme check)',
+			'user-agent'  => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url( '/' ) . ' (ToolStack theme check)',
 		)
 	);
 	if ( is_wp_error( $res ) ) {
@@ -420,6 +420,24 @@ function sp_menu_item_target_from_url( string $url ): ?array {
 	return null;
 }
 
+/**
+ * 並び順・クラス・開き方など、オーナーが触ったところを引き継ぐ。
+ *
+ * wp_update_nav_menu_item() は、渡さなかった項目を初期値で上書きします
+ * （行き先が消える、説明が空になる、など）。既存の項目を組み直すときは、
+ * 必ずこれを足してから呼びます。
+ */
+function sp_menu_item_args_keep( $item, array $args ): array {
+	$args['menu-item-db-id']       = (int) $item->ID;
+	$args['menu-item-parent-id']   = (int) $item->menu_item_parent;
+	$args['menu-item-target']      = (string) $item->target;
+	$args['menu-item-classes']     = is_array( $item->classes ) ? implode( ' ', array_filter( $item->classes ) ) : (string) $item->classes;
+	$args['menu-item-xfn']         = (string) $item->xfn;
+	$args['menu-item-description'] = (string) $item->description;
+	$args['menu-item-attr-title']  = (string) $item->attr_title;
+	return $args;
+}
+
 /** 1件のメニュー項目を、動的な参照（または現在のURL）に直す。直したら true。 */
 function sp_repair_menu_item( int $menu_id, $item, array $target ): bool {
 	$args = sp_menu_item_args( (string) $item->title, $target, (int) $item->menu_order );
@@ -439,13 +457,7 @@ function sp_repair_menu_item( int $menu_id, $item, array $target ): bool {
 	}
 
 	// 並び順・クラス・開き方など、オーナーが触ったところは残したまま行き先だけ直す。
-	$args['menu-item-db-id']       = (int) $item->ID;
-	$args['menu-item-parent-id']   = (int) $item->menu_item_parent;
-	$args['menu-item-target']      = (string) $item->target;
-	$args['menu-item-classes']     = is_array( $item->classes ) ? implode( ' ', array_filter( $item->classes ) ) : (string) $item->classes;
-	$args['menu-item-xfn']         = (string) $item->xfn;
-	$args['menu-item-description'] = (string) $item->description;
-	$args['menu-item-attr-title']  = (string) $item->attr_title;
+	$args = sp_menu_item_args_keep( $item, $args );
 
 	wp_update_nav_menu_item( $menu_id, (int) $item->ID, $args );
 	return true;
@@ -520,6 +532,61 @@ function sp_remove_cheat_sheet_menu_items(): int {
 }
 
 /**
+ * メニューに残った古い呼び名を、いまの呼び名に直す（1回だけ）。直した件数を返す。
+ *
+ * リンクの名前（例:「運営方針と評価方法」）は、設置したときにWordPress側の
+ * メニューへ保存されます。テーマの文言（inc/copy.php の nav.aboutMethodology）を
+ * あとから直しても、設置済みのサイトでは古い呼び名のまま残り、「外観 → メニュー」で
+ * 手直ししていただく必要がありました。ここでは、その古い呼び名が付いた項目だけを
+ * いまの呼び名に直します（行き先・並び順・クラスなどはそのまま）。
+ *
+ * 実行した印（sp_menu_methodology_renamed）を残すので、あとからオーナーが
+ * 別の名前に変えたものを戻してしまうことはありません。
+ */
+function sp_rename_retired_menu_labels(): int {
+	if ( get_option( 'sp_menu_methodology_renamed' ) ) {
+		return 0;
+	}
+	update_option( 'sp_menu_methodology_renamed', 1 );
+
+	$locations = get_theme_mod( 'nav_menu_locations' );
+	if ( ! is_array( $locations ) ) {
+		return 0;
+	}
+
+	// 1.3.23 まで、フッターのリンクはこの呼び名で保存されていました。
+	$retired = '運営方針と検証手法';
+	$current = (string) sp_t( 'nav.aboutMethodology' );
+	if ( '' === $current || $retired === $current ) {
+		return 0;
+	}
+
+	$renamed = 0;
+	foreach ( array_unique( array_map( 'intval', $locations ) ) as $menu_id ) {
+		$items = wp_get_nav_menu_items( $menu_id );
+		if ( ! $items ) {
+			continue;
+		}
+		foreach ( $items as $item ) {
+			if ( $retired !== (string) $item->title ) {
+				continue;
+			}
+			// 行き先が「このサイトについて」の項目だけを直す
+			// （同じ言葉を別の行き先に使っている項目には触らない）。
+			$target = sp_menu_item_target( $item );
+			if ( ! is_array( $target ) || 'page' !== (string) ( $target['type'] ?? '' ) || 'about' !== (string) ( $target['slug'] ?? '' ) ) {
+				continue;
+			}
+			$args = sp_menu_item_args( $current, $target, (int) $item->menu_order );
+			$args = sp_menu_item_args_keep( $item, $args );
+			wp_update_nav_menu_item( $menu_id, (int) $item->ID, $args );
+			$renamed++;
+		}
+	}
+	return $renamed;
+}
+
+/**
  * 廃止したチートシートのページをゴミ箱へ移す（1回だけ）。
  *
  * 2026-09-26 に、ページ本体・トップページの案内・メール登録をまとめて外しました。
@@ -588,6 +655,13 @@ function sp_run_health_check( bool $force = false ): array {
 	$dupes = sp_repair_duplicate_tools();
 	$menus = sp_repair_menus();
 	$sheet = sp_retire_cheat_sheet_page();
+	// ツールの説明文を新しい内容に入れ替える（版ごとに1回。手を入れた欄は残す）。
+	$copy  = sp_sync_tool_copy();
+	// 決まった3ページ（このサイトについて・アフィリエイト開示・プライバシーポリシー）の
+	// 本文とページ名も、同じ仕組みで入れ替える（版ごとに1回。書き換えたページは残す）。
+	$pages = sp_sync_page_content();
+	// メニューに残った古い呼び名（「運営方針と検証手法」）をいまの呼び名に直す（1回だけ）。
+	$methodology = sp_rename_retired_menu_labels();
 
 	// 古い404がキャッシュに残っているときだけ、心当たりのある仕組みに削除を頼む。
 	$purged = array();
@@ -596,19 +670,22 @@ function sp_run_health_check( bool $force = false ): array {
 	}
 
 	$state = array(
-		'version'    => SP_THEME_VERSION,
-		'mode'       => $urls['mode'],
-		'code'       => $urls['code'],
-		'probe'      => $urls['url'],
-		'probes'     => is_array( $urls['probes'] ?? null ) ? $urls['probes'] : array(),
-		'stale404'   => ! empty( $urls['stale_404'] ),
-		'purged'     => $purged,
-		'duplicates' => $dupes,
-		'menus'      => $menus,
-		'cheat_menu' => (int) ( $sheet['menu'] ?? 0 ),
-		'cheat_page' => (int) ( $sheet['page'] ?? 0 ),
-		'title'      => $title,
-		'time'       => time(), // 時差の影響を受けないよう、保存はUNIX時刻で。
+		'version'     => SP_THEME_VERSION,
+		'mode'        => $urls['mode'],
+		'code'        => $urls['code'],
+		'probe'       => $urls['url'],
+		'probes'      => is_array( $urls['probes'] ?? null ) ? $urls['probes'] : array(),
+		'stale404'    => ! empty( $urls['stale_404'] ),
+		'purged'      => $purged,
+		'duplicates'  => $dupes,
+		'menus'       => $menus,
+		'cheat_menu'  => (int) ( $sheet['menu'] ?? 0 ),
+		'cheat_page'  => (int) ( $sheet['page'] ?? 0 ),
+		'copy'        => $copy,
+		'pages'       => $pages,
+		'methodology' => $methodology,
+		'title'       => $title,
+		'time'        => time(), // 時差の影響を受けないよう、保存はUNIX時刻で。
 	);
 	update_option( 'sp_health', $state, false );
 	return $state;
@@ -717,7 +794,7 @@ function sp_health_notice() {
 	if ( 'plain' === $mode ) {
 		?>
 		<div class="notice notice-warning">
-			<p><strong>StackProof: サイト内のリンクの形について</strong></p>
+			<p><strong>ToolStack: サイト内のリンクの形について</strong></p>
 			<p>
 				このサーバーでは <code>/tools/</code> のような半角スラッシュのURLが開けませんでした（サーバーが404を返しています）。
 				サイトが全ページ404にならないよう、いまは WordPress の素のURL（<code>?post_type=sp_tool</code> など）で運用しています。
@@ -741,7 +818,7 @@ function sp_health_notice() {
 	if ( 'unknown' === $code ) {
 		?>
 		<div class="notice notice-warning">
-			<p><strong>StackProof: URLの形を自動で判定できませんでした</strong></p>
+			<p><strong>ToolStack: URLの形を自動で判定できませんでした</strong></p>
 			<p>
 				このサーバー自身から <code>/tools/</code> を開けなかったため、自動での判定を見送りました（設定は変更していません）。
 				ブラウザでサイトを開き、メニューの「ツール」「ブログ」などが表示されるかご確認ください。
@@ -763,7 +840,7 @@ function sp_health_notice() {
 		$tools_url = (string) ( $state['probe'] ?? '/tools/' );
 		?>
 		<div class="notice notice-warning">
-			<p><strong>StackProof: ツール一覧のURLに古い404が残っています（サイトの設定は正常です）</strong></p>
+			<p><strong>ToolStack: ツール一覧のURLに古い404が残っています（サイトの設定は正常です）</strong></p>
 			<p>
 				下の表のとおり、WordPress 側では <code><?php echo esc_html( $tools_url ); ?></code> は正常に応答しています（「キャッシュを避けた確認」が200）。
 				ところが、訪問者が実際に開くURLには <strong>404（見つかりません）が保存されたまま</strong>で、そのURLだけ404が返ります。
@@ -804,13 +881,53 @@ function sp_health_notice() {
 	$sheet = (int) ( $state['cheat_menu'] ?? 0 );
 	$sheet_page = (int) ( $state['cheat_page'] ?? 0 );
 	$title = (string) ( $state['title'] ?? '' );
-	if ( ! $dupes && ! $menus && ! $sheet && ! $sheet_page && '' === $title ) {
+
+	$copy        = is_array( $state['copy'] ?? null ) ? $state['copy'] : array();
+	$copy_fields = (int) ( $copy['copy'] ?? 0 );
+	$copy_titles = (int) ( $copy['title'] ?? 0 );
+	$copy_kept   = (int) ( $copy['kept'] ?? 0 );
+
+	$pages       = is_array( $state['pages'] ?? null ) ? $state['pages'] : array();
+	$page_body   = (int) ( $pages['body'] ?? 0 );
+	$page_titles = (int) ( $pages['title'] ?? 0 );
+	$page_kept   = (int) ( $pages['kept'] ?? 0 );
+	$renamed     = (int) ( $state['methodology'] ?? 0 );
+
+	if ( ! $dupes && ! $menus && ! $sheet && ! $sheet_page && ! $copy_fields && ! $copy_titles && ! $copy_kept
+		&& ! $page_body && ! $page_titles && ! $page_kept && ! $renamed && '' === $title ) {
 		return;
 	}
 	?>
 	<div class="notice notice-success is-dismissible">
-		<p><strong>StackProof: 設置時の点検で整えたところ</strong></p>
+		<p><strong>ToolStack: 点検で整えたところ</strong></p>
 		<ul style="list-style:disc;margin-left:1.5em">
+			<?php if ( $copy_fields || $copy_titles ) : ?>
+				<li>
+					ツールの説明文を新しい内容に更新しました（文章 <?php echo esc_html( (string) $copy_fields ); ?> か所<?php if ( $copy_titles ) : ?>・名前 <?php echo esc_html( (string) $copy_titles ); ?> 件<?php endif; ?>）。
+					対象は「向いている人」「メリット」「注意点」「評価」で、ツール一覧・ツール個別ページ・トップページの一覧に反映されています。
+				</li>
+			<?php endif; ?>
+			<?php if ( $copy_kept ) : ?>
+				<li>
+					ツールの説明文のうち <?php echo esc_html( (string) $copy_kept ); ?> か所は、管理画面で書き換えられた欄のため、そのままにしています。ご自身で書いた内容を、テーマが上書きすることはありません。
+				</li>
+			<?php endif; ?>
+			<?php if ( $page_body || $page_titles ) : ?>
+				<li>
+					「このサイトについて」「アフィリエイト開示」「プライバシーポリシー」の本文を新しい内容に更新しました（本文 <?php echo esc_html( (string) $page_body ); ?> ページ<?php if ( $page_titles ) : ?>・ページ名 <?php echo esc_html( (string) $page_titles ); ?> 件<?php endif; ?>）。
+					これまでは1ページずつ管理画面で書き換えていただく必要がありましたが、次からはテーマを入れ替えるだけで反映されます（これから先、管理画面で書き換えたページはそのまま残します）。
+				</li>
+			<?php endif; ?>
+			<?php if ( $page_kept ) : ?>
+				<li>
+					固定ページのうち <?php echo esc_html( (string) $page_kept ); ?> ページは、管理画面で書き換えられたため、そのままにしています。ご自身で書いた内容を、テーマが上書きすることはありません。
+				</li>
+			<?php endif; ?>
+			<?php if ( $renamed ) : ?>
+				<li>
+					メニューに残っていた古い呼び名「運営方針と検証手法」を「<?php echo esc_html( (string) sp_t( 'nav.aboutMethodology' ) ); ?>」に直しました（行き先・並び順はそのままです）。「外観 → メニュー」での手直しは不要になりました。
+				</li>
+			<?php endif; ?>
 			<?php if ( '' !== $title ) : ?>
 				<li>
 					サイトのタイトルを「<?php echo esc_html( $title ); ?>」に設定しました。

@@ -5,7 +5,7 @@
 @plugin "@tailwindcss/typography";
 
 /*
- * Design tokens — StackProof, direction "Clean SaaS" (see .claude/design.md).
+ * Design tokens — ToolStack, direction "Clean SaaS" (see .claude/design.md).
  * The primary/accent below are the site's OWN (navy #1e40af from the wordmark,
  * signal amber #f59e0b for verdict marks); the neutrals, radius and shadows are
  * the direction's. Tailwind v4 generates utilities from these tokens

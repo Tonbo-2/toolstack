@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ToolMark } from "@/components/ToolMark";
 import { localeHref, type Locale } from "@/lib/i18n";
-import type { LocalizedCategory, LocalizedTool } from "@/lib/tools";
+import { toolDisplayName, type LocalizedCategory, type LocalizedTool } from "@/lib/tools";
 
 /** The dictionary strings this table renders — passed in from the server page. */
 export interface ExplorerLabels {
@@ -54,7 +54,7 @@ export function ToolExplorer({
       if (category && tool.category !== category) return false;
       if (!q) return true;
       const label = categories.find((c) => c.slug === tool.category)?.label ?? "";
-      return [tool.name, tool.bestFor, tool.standout, label]
+      return [toolDisplayName(tool), tool.bestFor, tool.standout, label]
         .join(" ")
         .toLowerCase()
         .includes(q);
@@ -140,7 +140,7 @@ export function ToolExplorer({
                       href={localeHref(locale, `/tools/${tool.slug}`)}
                       className="font-heading text-base font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline"
                     >
-                      {tool.name}
+                      {toolDisplayName(tool)}
                     </Link>
                   </span>
                 </td>

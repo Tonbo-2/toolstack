@@ -149,9 +149,8 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             ))}
           </nav>
         </div>
-        <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-start sm:justify-between">
+        <div className="mt-10 border-t border-border pt-6 text-xs text-muted">
           <p>{fill(t.chrome.copyright, { year: new Date().getFullYear(), site: SITE_NAME })}</p>
-          <p className="max-w-md sm:text-right">{t.chrome.fundingNote}</p>
         </div>
       </div>
     </footer>

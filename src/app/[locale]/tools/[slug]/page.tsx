@@ -9,7 +9,13 @@ import {
   resolveLocale,
   type Locale,
 } from "@/lib/i18n";
-import { categoryBySlug, formatReviewed, toolBySlug, toolsInCategory } from "@/lib/tools";
+import {
+  categoryBySlug,
+  formatReviewed,
+  toolBySlug,
+  toolDisplayName,
+  toolsInCategory,
+} from "@/lib/tools";
 
 /**
  * The meta description: what the tool is, who it suits, then its biggest trade-off.
@@ -85,7 +91,7 @@ export default async function ToolPage({
             <ToolMark logo={tool.logo} size={48} />
             <div>
               <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {tool.name}
+                {toolDisplayName(tool)}
               </h1>
               <p className="mt-2 text-sm text-muted">
                 {category?.label} · {t.tool.reviewedLabel.replace("{date}", formatReviewed(tool.reviewed, locale))}
@@ -102,7 +108,7 @@ export default async function ToolPage({
               rel="noopener noreferrer"
               className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              {t.tool.visitLabel.replace("{name}", tool.name)}
+              {t.tool.visitLabel.replace("{name}", toolDisplayName(tool))}
             </Link>
             <span className="text-xs leading-5 text-muted">{t.tool.outboundNote}</span>
           </div>
@@ -151,7 +157,7 @@ export default async function ToolPage({
                   >
                     <ToolMark logo={pair.logo} />
                     <span className="font-heading text-sm font-semibold text-foreground">
-                      {pair.name}
+                      {toolDisplayName(pair)}
                     </span>
                   </Link>
                 </li>
@@ -175,7 +181,7 @@ export default async function ToolPage({
                     className="flex flex-wrap items-center gap-3 font-heading text-sm font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline"
                   >
                     <ToolMark logo={item.logo} size={22} />
-                    {item.name}
+                    {toolDisplayName(item)}
                   </Link>
                   <p className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
                     {item.bestFor}

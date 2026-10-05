@@ -1,6 +1,6 @@
 <?php
 /**
- * 共通フッター。ブランドの説明と規約系リンク、運営費の注記。
+ * 共通フッター。ブランドの説明と規約系リンク。
  */
 $sp_brand = sp_brand();
 ?>
@@ -38,7 +38,6 @@ $sp_brand = sp_brand();
 
 		<div class="sp-footer__bottom">
 			<p><?php echo esc_html( sp_t( 'site.copyright', array( 'year' => date_i18n( 'Y' ), 'site' => $sp_brand['name'] ) ) ); ?></p>
-			<p><?php echo esc_html( sp_t( 'site.fundingNote' ) ); ?></p>
 		</div>
 	</div>
 </footer>

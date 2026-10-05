@@ -12,7 +12,7 @@ export default function RootNotFound() {
       <body style={{ fontFamily: "system-ui, sans-serif", padding: "4rem 1.5rem" }}>
         <h1 style={{ fontSize: "1.5rem", margin: 0 }}>ページが見つかりません</h1>
         <p style={{ marginTop: "0.75rem" }}>
-          <a href="/">StackProof のトップへ戻る</a>
+          <a href="/">ToolStack のトップへ戻る</a>
         </p>
       </body>
     </html>

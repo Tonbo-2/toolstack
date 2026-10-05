@@ -46,17 +46,6 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
 
             <div>
               <h2 className="font-heading text-xl font-semibold tracking-tight">
-                {t.privacy.notDoneTitle}
-              </h2>
-              <ul className="mt-3 space-y-2 text-muted">
-                {t.privacy.notDoneItems.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl font-semibold tracking-tight">
                 {t.privacy.outboundTitle}
               </h2>
               <p className="mt-3 text-muted">{t.privacy.outboundBody}</p>
@@ -76,13 +65,6 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
                 </Link>
                 {t.privacy.removalAfter}
               </p>
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl font-semibold tracking-tight">
-                {t.privacy.changesTitle}
-              </h2>
-              <p className="mt-3 text-muted">{t.privacy.changesBody}</p>
             </div>
           </div>
         </div>

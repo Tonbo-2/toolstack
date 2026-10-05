@@ -4,7 +4,14 @@ import { ToolMark } from "@/components/ToolMark";
 import { BRAND } from "@/lib/brand";
 import { displayDate, fetchArticles } from "@/lib/blog";
 import { fill, getDictionary, localeHref, type Locale } from "@/lib/i18n";
-import { categoriesFor, stacksFor, toolBySlug, toolsFor, type LocalizedTool } from "@/lib/tools";
+import {
+  categoriesFor,
+  stacksFor,
+  toolBySlug,
+  toolDisplayName,
+  toolsFor,
+  type LocalizedTool,
+} from "@/lib/tools";
 
 export const revalidate = 60;
 
@@ -106,7 +113,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
                     href={localeHref(locale, `/tools/${tool.slug}`)}
                     className="font-heading font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline"
                   >
-                    {tool.name}
+                    {toolDisplayName(tool)}
                   </Link>
                 </span>
                 <span className="text-sm text-muted">
@@ -161,7 +168,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
                         <li key={slug}>
                           <Link href={localeHref(locale, `/tools/${slug}`)} className={chip}>
                             <ToolMark logo={tool.logo} size={20} />
-                            {tool.name}
+                            {toolDisplayName(tool)}
                           </Link>
                         </li>
                       );

@@ -11,8 +11,8 @@
  * - `reviewed` is the month the entry was written, shown to the reader.
  * - `logo` may be an empty string when no verified mark could be hosted; the UI
  *   then renders the name alone rather than a stand-in badge.
- * - Every reader-facing string is Japanese (`{ ja }`) — product names stay as the
- *   vendor writes them, in Latin script, and are never translated.
+ * - Every reader-facing string is Japanese (`{ ja }`). Product names stay as the
+ *   vendor writes them; Japanese readings are shown separately.
  */
 
 import { formatDate, type Locale } from "@/lib/i18n";
@@ -30,6 +30,8 @@ export interface Tool {
   slug: string;
   /** Real product name, exactly as the vendor writes it. Never translated. */
   name: string;
+  /** Japanese reading shown alongside the official product name. */
+  reading: string;
   /** Vendor homepage — used by /go/[slug] when no affiliate link is set yet. */
   url: string;
   /** Hosted vendor mark (favicon-grade, never recolored or re-composed). */
@@ -58,6 +60,14 @@ export interface LocalizedTool extends Omit<Tool, "bestFor" | "standout" | "watc
   standout: string;
   watchFor: string;
   verdict: string;
+}
+
+/** Add a pronunciation while keeping the vendor's official name intact. */
+export function toolDisplayName(tool: Pick<LocalizedTool, "name" | "reading">): string {
+  const formerName = tool.name.match(/^(.*?)（旧(.+?)）$/u);
+  return formerName
+    ? `${formerName[1]}（${tool.reading}、旧${formerName[2]}）`
+    : `${tool.name}（${tool.reading}）`;
 }
 
 export type CategorySlug = "workspace" | "automation" | "writing-seo" | "email" | "audio-meetings";
@@ -116,6 +126,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "notion",
     name: "Notion",
+    reading: "ノーション",
     url: "https://www.notion.so",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/5640c98062d12b62.png",
     category: "workspace",
@@ -137,6 +148,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "zapier",
     name: "Zapier",
+    reading: "ザピアー",
     url: "https://zapier.com",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/23ae37879fbb05be.png",
     category: "automation",
@@ -158,6 +170,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "make",
     name: "Make",
+    reading: "メイク",
     url: "https://www.make.com",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/3c847799933a657d.jpg",
     category: "automation",
@@ -179,6 +192,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "jasper",
     name: "Jasper",
+    reading: "ジャスパー",
     url: "https://www.jasper.ai",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/3348b05b9e8b740e.png",
     category: "writing-seo",
@@ -200,6 +214,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "writesonic",
     name: "Writesonic",
+    reading: "ライトソニック",
     url: "https://writesonic.com",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/85aa54a0adf0098f.png",
     category: "writing-seo",
@@ -221,6 +236,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "surfer-seo",
     name: "Surfer SEO",
+    reading: "サーファー・エスイーオー",
     url: "https://surferseo.com",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/332cd34458cf503a.png",
     category: "writing-seo",
@@ -242,17 +258,18 @@ export const TOOLS: Tool[] = [
   {
     slug: "kit",
     name: "Kit（旧ConvertKit）",
+    reading: "キット",
     url: "https://kit.com",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/53257fe889d1112a.png",
     category: "email",
     bestFor: {
-      ja: "メールマガジンの配信をはじめ、登録フォームやランディングページの作成、デジタル商品の販売など、クリエイターの情報発信と読者・顧客との関係づくりを支援するプラットフォーム。\nメールを中心に継続的な情報発信やファンとの関係づくりに取り組みたい個人や小規模チーム。",
+      ja: "登録フォームやランディングページの作成、デジタル商品の販売などを通じて、クリエイターの情報発信と読者・顧客との関係づくりを支援するプラットフォーム。\nメールを中心に継続的な情報発信やファンとの関係づくりに取り組みたい個人や小規模チーム。",
     },
     standout: {
       ja: "登録直後のメール配信やタグ付けの設定が見やすく、全体がメール配信を中心に作られています。",
     },
     watchFor: {
-      ja: "メールマーケティングを中心としたサービスのため、営業管理の機能は限定的。\n商談の進捗管理や営業レポートなど、CRM（顧客関係管理）としての機能を重視する場合は別のツールを検討する必要がある。",
+      ja: "メールマーケティングを中心としたサービスのため、営業管理の機能は限定的。\n案件の進捗管理や営業レポートなど、CRM（顧客関係管理）としての機能を重視する場合は別のツールを検討する必要がある。",
     },
     verdict: {
       ja: "情報発信そのものが成果につながるなら、最もすっきりした選択です。毎週書くつもりのリスト向けで、一度だけの告知には要りません。",
@@ -263,6 +280,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "getresponse",
     name: "GetResponse",
+    reading: "ゲットレスポンス",
     url: "https://www.getresponse.com",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/6e3d791f0876b07e.jpg",
     category: "email",
@@ -284,6 +302,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "elevenlabs",
     name: "ElevenLabs",
+    reading: "イレブンラボ",
     url: "https://elevenlabs.io",
     // No verified mark could be hosted for this entry — the name stands alone.
     logo: "",
@@ -306,6 +325,7 @@ export const TOOLS: Tool[] = [
   {
     slug: "otter-ai",
     name: "Otter.ai",
+    reading: "オッター・エーアイ",
     url: "https://otter.ai",
     logo: "https://storage.googleapis.com/noimosai-webpage-assets-prod/cmu465q5g00cz01s6iagko9jv/cmu9favrp000801s6hnjuzujt/9b8a90ec8dc37495.png",
     category: "audio-meetings",
@@ -351,18 +371,18 @@ export const STACKS: Stack[] = [
       ja: "顧客対応、通話、メールを1人で回している人。",
     },
     why: {
-      ja: "顧客の資料と通話の記録が1か所にまとまり、専任の担当者を置かずに定期的な情報発信を続けられます。",
+      ja: "顧客の資料と通話の記録が1か所にまとまり、担当者を増やさず定期的な情報発信を続けられます。",
     },
     toolSlugs: ["notion", "otter-ai", "kit"],
   },
   {
     slug: "content-led-startup",
-    name: { ja: "記事から商談につなげる構成" },
+    name: { ja: "記事から問い合わせにつながる流れ" },
     forWho: {
-      ja: "公開した記事をきっかけに商談が始まる小規模チーム。",
+      ja: "公開した記事をきっかけに案件が始まる小規模チーム。",
     },
     why: {
-      ja: "下書き、検索順位のチェック、メールリストの管理が1つの流れになり、人を増やさずに毎週続けられます。",
+      ja: "記事の下書きから検索順位のチェック、メールリストの管理までをツールで分担し、人を増やさずに毎週の運用を続けられます。",
     },
     toolSlugs: ["writesonic", "surfer-seo", "kit"],
   },
@@ -384,6 +404,7 @@ export function localizedTool(tool: Tool, locale: Locale): LocalizedTool {
   return {
     slug: tool.slug,
     name: tool.name,
+    reading: tool.reading,
     url: tool.url,
     logo: tool.logo,
     category: tool.category,
