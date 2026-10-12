@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SP_THEME_VERSION', '1.3.33' );
+define( 'SP_THEME_VERSION', '1.3.48' );
 
 /**
  * ツールの説明文の版。
@@ -24,7 +24,7 @@ define( 'SP_THEME_VERSION', '1.3.33' );
  * 管理画面を開いたときの点検が、この値の変化を見て1回だけ入れ替えます
  * （inc/seed.php の sp_sync_tool_copy()）。編集画面で書き換えられた欄は残します。
  */
-define( 'SP_TOOL_COPY_VERSION', '2026-10-05' );
+define( 'SP_TOOL_COPY_VERSION', '2026-10-12-6' );
 
 /**
  * 固定ページの本文の版。
@@ -38,7 +38,7 @@ define( 'SP_TOOL_COPY_VERSION', '2026-10-05' );
  * この3ページの文を変えたら、この値も上げてください。Next.js版
  * （src/lib/dictionaries/ja.ts）と同じ内容にするのが決まりです。
  */
-define( 'SP_PAGE_COPY_VERSION', '2026-09-27-6' );
+define( 'SP_PAGE_COPY_VERSION', '2026-10-07-1' );
 
 require get_template_directory() . '/inc/copy.php';
 require get_template_directory() . '/inc/data.php';

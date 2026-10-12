@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { affiliateTarget } from "@/lib/affiliates";
-import { SITE_URL } from "@/lib/site";
 
 /**
  * Outbound reviewer link. Every "visit this tool" action points here so the
@@ -12,9 +11,11 @@ import { SITE_URL } from "@/lib/site";
  */
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const target = affiliateTarget(slug);
-  if (!target) return NextResponse.redirect(new URL("/tools", SITE_URL), 302);
+  // 掲載先が未設定のスラッグは、いま見ているホストのツール一覧へ戻します
+  // （公開URLの設定に依存すると、設定が無い環境で別ホストへ飛んでしまうため）。
+  if (!target) return NextResponse.redirect(new URL("/tools", request.url), 302);
   return NextResponse.redirect(target.url, 302);
 }

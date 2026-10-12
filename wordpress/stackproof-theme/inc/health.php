@@ -587,6 +587,102 @@ function sp_rename_retired_menu_labels(): int {
 }
 
 /**
+ * メインメニューに残る「ツール」を、ツール一覧へのリンクだけ「ツール一覧」に変える（1回だけ）。
+ *
+ * リンク先・並び順・階層・表示設定はそのままにし、名前だけを更新します。
+ * 「ツール」と別のページを結び付けた項目や、オーナーが変更した名前には触れません。
+ */
+function sp_rename_primary_tools_menu_label(): int {
+	if ( get_option( 'sp_menu_tools_label_renamed' ) ) {
+		return 0;
+	}
+
+	$locations = get_theme_mod( 'nav_menu_locations' );
+	$menu_id   = is_array( $locations ) ? (int) ( $locations['primary'] ?? 0 ) : 0;
+	if ( ! $menu_id ) {
+		return 0;
+	}
+
+	$items = wp_get_nav_menu_items( $menu_id );
+	if ( ! $items ) {
+		return 0;
+	}
+
+	$retired = 'ツール';
+	$current = (string) sp_t( 'nav.directory' );
+	if ( '' === $current || $retired === $current ) {
+		update_option( 'sp_menu_tools_label_renamed', 1 );
+		return 0;
+	}
+
+	$renamed = 0;
+	foreach ( $items as $item ) {
+		if ( $retired !== (string) $item->title ) {
+			continue;
+		}
+		$target = sp_menu_item_target( $item );
+		if ( ! is_array( $target ) || 'archive' !== (string) ( $target['type'] ?? '' ) ) {
+			continue;
+		}
+
+		// 既存の項目をそのまま使い、ラベルだけ変える。
+		$args = array(
+			'menu-item-title'     => $current,
+			'menu-item-status'    => (string) ( $item->post_status ?? 'publish' ),
+			'menu-item-position'  => (int) $item->menu_order,
+			'menu-item-type'      => (string) $item->type,
+			'menu-item-object'    => (string) $item->object,
+			'menu-item-object-id' => (int) $item->object_id,
+			'menu-item-url'       => (string) $item->url,
+		);
+		$args = sp_menu_item_args_keep( $item, $args );
+		$updated = wp_update_nav_menu_item( $menu_id, (int) $item->ID, $args );
+		if ( ! is_wp_error( $updated ) && $updated ) {
+			$renamed++;
+		}
+	}
+
+	update_option( 'sp_menu_tools_label_renamed', 1 );
+	return $renamed;
+}
+
+/**
+ * email スラッグのカテゴリが既定の旧名なら、新しい表示名に変える（1回だけ）。
+ *
+ * カテゴリのスラッグや説明は変更せず、別の名前に編集されたカテゴリも残します。
+ */
+function sp_rename_email_category_label(): int {
+	if ( get_option( 'sp_email_category_label_renamed' ) ) {
+		return 0;
+	}
+
+	$term = get_term_by( 'slug', 'email', 'sp_category' );
+	if ( ! $term || is_wp_error( $term ) ) {
+		return 0;
+	}
+
+	$retired  = 'メールとニュースレター';
+	$category = sp_categories();
+	$current  = (string) ( $category['email']['label'] ?? '' );
+	if ( $retired !== (string) $term->name || '' === $current || $retired === $current ) {
+		update_option( 'sp_email_category_label_renamed', 1 );
+		return 0;
+	}
+
+	$updated = wp_update_term(
+		(int) $term->term_id,
+		'sp_category',
+		array( 'name' => $current )
+	);
+	if ( is_wp_error( $updated ) ) {
+		return 0;
+	}
+
+	update_option( 'sp_email_category_label_renamed', 1 );
+	return 1;
+}
+
+/**
  * 廃止したチートシートのページをゴミ箱へ移す（1回だけ）。
  *
  * 2026-09-26 に、ページ本体・トップページの案内・メール登録をまとめて外しました。
@@ -662,6 +758,9 @@ function sp_run_health_check( bool $force = false ): array {
 	$pages = sp_sync_page_content();
 	// メニューに残った古い呼び名（「運営方針と検証手法」）をいまの呼び名に直す（1回だけ）。
 	$methodology = sp_rename_retired_menu_labels();
+	// 旧メインメニュー名とカテゴリ名を、対象が一致する場合だけ1回更新する。
+	$tools_label    = sp_rename_primary_tools_menu_label();
+	$email_category = sp_rename_email_category_label();
 
 	// 古い404がキャッシュに残っているときだけ、心当たりのある仕組みに削除を頼む。
 	$purged = array();
@@ -684,6 +783,8 @@ function sp_run_health_check( bool $force = false ): array {
 		'copy'        => $copy,
 		'pages'       => $pages,
 		'methodology' => $methodology,
+		'tools_label' => $tools_label,
+		'email_category' => $email_category,
 		'title'       => $title,
 		'time'        => time(), // 時差の影響を受けないよう、保存はUNIX時刻で。
 	);
@@ -892,9 +993,12 @@ function sp_health_notice() {
 	$page_titles = (int) ( $pages['title'] ?? 0 );
 	$page_kept   = (int) ( $pages['kept'] ?? 0 );
 	$renamed     = (int) ( $state['methodology'] ?? 0 );
+	$tools_label = (int) ( $state['tools_label'] ?? 0 );
+	$email_category = (int) ( $state['email_category'] ?? 0 );
 
 	if ( ! $dupes && ! $menus && ! $sheet && ! $sheet_page && ! $copy_fields && ! $copy_titles && ! $copy_kept
-		&& ! $page_body && ! $page_titles && ! $page_kept && ! $renamed && '' === $title ) {
+		&& ! $page_body && ! $page_titles && ! $page_kept && ! $renamed && ! $tools_label
+		&& ! $email_category && '' === $title ) {
 		return;
 	}
 	?>
@@ -927,6 +1031,12 @@ function sp_health_notice() {
 				<li>
 					メニューに残っていた古い呼び名「運営方針と検証手法」を「<?php echo esc_html( (string) sp_t( 'nav.aboutMethodology' ) ); ?>」に直しました（行き先・並び順はそのままです）。「外観 → メニュー」での手直しは不要になりました。
 				</li>
+			<?php endif; ?>
+			<?php if ( $tools_label ) : ?>
+				<li>メインメニューの「ツール」を「ツール一覧」に変更しました（リンク先・並び順はそのままです）。</li>
+			<?php endif; ?>
+			<?php if ( $email_category ) : ?>
+				<li>「メールとニュースレター」カテゴリを「メールと情報発信」に変更しました（スラッグはそのままです）。</li>
 			<?php endif; ?>
 			<?php if ( '' !== $title ) : ?>
 				<li>

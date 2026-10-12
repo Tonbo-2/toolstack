@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "operations": [
+    {
+      "id": "submitLead",
+      "route": "/about",
+      "capability": "form-submission",
+      "description": "About page message form; stores a row in the leads table (Manage → Leads).",
+      "requests": [{ "method": "POST", "path": "/api/leads" }]
+    },
+    {
+      "id": "readBlogRss",
+      "route": "/blog/rss.xml",
+      "capability": "live-data",
+      "description": "RSS feed built live from CMS articles.",
+      "requests": [{ "method": "GET", "path": "/blog/rss.xml" }]
+    },
+    {
+      "id": "readLlmsFull",
+      "route": "/llms-full.txt",
+      "capability": "live-data",
+      "description": "AI discovery file listing tools and live CMS articles.",
+      "requests": [{ "method": "GET", "path": "/llms-full.txt" }]
+    },
+    {
+      "id": "readLlms",
+      "route": "/llms.txt",
+      "capability": "live-data",
+      "description": "AI discovery index.",
+      "requests": [{ "method": "GET", "path": "/llms.txt" }]
+    }
+  ],
+  "decisions": [
+    {
+      "observationId": "outbound-go-redirect",
+      "disposition": "external",
+      "reason": "The 「◯◯を見る」 button opens /go/<slug>, whose handler 302-redirects the reader to the vendor's own page. The destination is an external service that stays a real link and the handler stores no data, so there is no same-origin backend response a page flow can prove — the route is not declared as a backend operation.",
+      "evidence": [
+        "src/app/go/[slug]/route.ts — NextResponse.redirect(target.url, 302) to the destination in src/lib/affiliates.ts; a slug with no destination redirects to /tools on the same origin",
+        "The verification browser is network-isolated: /go/zapier aborts with ERR_TUNNEL_CONNECTION_FAILED, and /go/zzz-verify-test consumes its 302 during the initial navigation, so debug_page never observes the response (screenshots/debug-desktop-go_zzz-verify-test-1791637268260.json)",
+        "2026-10-12 (6th tool-copy round): re-checked in the verification browser — /go/zzz-verify-test ends on /tools (url assertion passed, screenshots/debug-desktop-go_zzz-verify-test-1791773111439.json). The handler is unchanged and still stores no data, so the route stays a non-operation",
+        "2026-10-12 (7th tool-copy round, GetResponse): re-checked in the verification browser — reloading /go/zzz-verify-test lands on /tools (url assertion passed, screenshots/debug-desktop-go_zzz-verify-test-1791781515390.json). src/app/go/[slug]/route.ts is unchanged and stores no data, so there is still no same-origin backend response for a page flow to assert",
+        "A direct HTTP request to the local dev server returns 302 with the vendor Location header — re-checked 2026-10-10: /go/zapier → 302 https://zapier.com/, unregistered slug → 302 /tools (same origin); recorded in TODO.md 2026-10-10",
+        "2026-10-12 re-check in the verification browser: loading /go/zzz-verify-test ends on /tools (asserted url expectation, screenshots/debug-desktop-go_zzz-verify-test-1791767358013.json) while the 302 itself stays unobservable — expectResponse for GET /go/zzz-verify-test reports no response within 8s (screenshots/debug-desktop-go_zzz-verify-test-1791767032625.json), and /go/zapier only aborts with ERR_TUNNEL_CONNECTION_FAILED because the sandbox is network-isolated. The handler is unchanged since the direct check",
+        "2026-10-12 (same day, tool-copy round): re-checked in the verification browser — reloading /go/zzz-verify-test lands on /tools (url assertion passed twice, screenshots/debug-desktop-go_zzz-verify-test-1791769750797.json). The handler still stores no data, so there is no same-origin backend response for a page flow to assert",
+        "2026-10-12 (5th tool-copy round): the earlier outboundGo operation entry was withdrawn — a 302 that the browser consumes yields no observable same-origin response, and tagging the landing page's GET /tools as its proof would credit another route's success, which the contract rules forbid. Re-checked once more: loading /go/zzz-verify-test ends on /tools (url assertion, screenshots/debug-desktop-go_zzz-verify-test-1791770673775.json, recorded in the 4th round); the 302 remains unobservable in this browser and a slug WITH a destination points at an external host the isolated sandbox cannot reach"
+      ],
+      "operationIds": []
+    }
+  ]
+}

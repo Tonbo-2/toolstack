@@ -110,7 +110,6 @@ export default async function ToolPage({
             >
               {t.tool.visitLabel.replace("{name}", toolDisplayName(tool))}
             </Link>
-            <span className="text-xs leading-5 text-muted">{t.tool.outboundNote}</span>
           </div>
         </div>
       </section>
@@ -130,7 +129,9 @@ export default async function ToolPage({
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
                 {t.tool.standout}
               </dt>
-              <dd className="mt-2 text-sm leading-6 text-muted">{tool.standout}</dd>
+              <dd className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
+                {tool.standout}
+              </dd>
             </div>
             <div className="border-t border-accent pt-4">
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">

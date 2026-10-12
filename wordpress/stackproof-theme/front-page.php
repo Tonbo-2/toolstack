@@ -84,7 +84,7 @@ $sp_recent = get_posts( array( 'post_type' => 'post', 'numberposts' => 3 ) );
 				<li class="sp-row">
 					<span class="sp-row__name">
 						<?php sp_tool_mark( $sp_tool->ID ); ?>
-						<a href="<?php echo esc_url( get_permalink( $sp_tool ) ); ?>"><?php echo esc_html( $sp_tool->post_title ); ?></a>
+						<a href="<?php echo esc_url( get_permalink( $sp_tool ) ); ?>"><?php echo esc_html( sp_tool_display_name( $sp_tool->ID ) ); ?></a>
 					</span>
 					<span class="sp-row__meta"><?php echo esc_html( sp_tool_category_label( $sp_tool->ID ) ); ?></span>
 					<span class="sp-row__meta"><?php echo nl2br( esc_html( get_post_meta( $sp_tool->ID, 'best_for', true ) ) ); ?></span>
@@ -130,7 +130,7 @@ $sp_recent = get_posts( array( 'post_type' => 'post', 'numberposts' => 3 ) );
 								<li>
 									<a class="sp-chip" href="<?php echo esc_url( get_permalink( $sp_tool ) ); ?>">
 										<?php sp_tool_mark( $sp_tool->ID, 'sm' ); ?>
-										<?php echo esc_html( $sp_tool->post_title ); ?>
+										<?php echo esc_html( sp_tool_display_name( $sp_tool->ID ) ); ?>
 									</a>
 								</li>
 							<?php endforeach; ?>

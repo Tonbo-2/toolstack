@@ -52,14 +52,14 @@ export type NavLabelKey =
 export const NAV_ITEMS: NavItem[] = [
   { labelKey: "tools", label: "ツール一覧", href: "/tools" },
   { labelKey: "stacks", label: "組み合わせ", href: "/#stacks" },
-  { labelKey: "blog", label: "ブログ", href: "/blog" },
+  { labelKey: "blog", label: "記事", href: "/blog" },
   { labelKey: "about", label: "このサイトについて", href: "/about" },
 ];
 
 /** Footer-only links (legal pages etc.). Same rules as NAV_ITEMS. */
 export const FOOTER_ITEMS: NavItem[] = [
   { labelKey: "directory", label: "ツール一覧", href: "/tools" },
-  { labelKey: "blog", label: "ブログ", href: "/blog" },
+  { labelKey: "blog", label: "記事", href: "/blog" },
   { labelKey: "aboutMethodology", label: "運営方針と評価方法", href: "/about" },
   { labelKey: "disclosure", label: "アフィリエイト開示", href: "/disclosure" },
   { labelKey: "privacy", label: "プライバシーポリシー", href: "/privacy" },
@@ -76,7 +76,7 @@ export const ROUTE_NAMES: Record<string, string> = {
   about: "このサイトについて",
   disclosure: "アフィリエイト開示",
   privacy: "プライバシーポリシー",
-  blog: "ブログ",
+  blog: "記事",
 };
 
 /** True in a path-mount build. Inlined at build time (NEXT_PUBLIC_*). */

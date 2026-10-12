@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "migrations": [
+    {
+      "id": "202610100001_create_leads",
+      "description": "Leads table for the /about contact form (read by Manage → Leads)",
+      "purpose": "required",
+      "sqlite": {
+        "steps": [
+          {
+            "sql": "CREATE TABLE IF NOT EXISTS leads (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT NOT NULL, company TEXT, message TEXT, source TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)"
+          },
+          {
+            "sql": "CREATE INDEX IF NOT EXISTS leads_created_at_idx ON leads (created_at)"
+          }
+        ],
+        "verify": [
+          {
+            "id": "leads_table_present",
+            "sql": "SELECT 1 AS missing WHERE NOT EXISTS (SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'leads')",
+            "expect": "no_rows"
+          }
+        ]
+      },
+      "postgres": {
+        "steps": [
+          {
+            "sql": "CREATE TABLE IF NOT EXISTS leads (id BIGSERIAL PRIMARY KEY, name TEXT, email TEXT NOT NULL, company TEXT, message TEXT, source TEXT, created_at TIMESTAMPTZ DEFAULT now())"
+          },
+          {
+            "sql": "CREATE INDEX IF NOT EXISTS leads_created_at_idx ON leads (created_at)"
+          }
+        ],
+        "verify": [
+          {
+            "id": "leads_table_present",
+            "sql": "SELECT 1 AS missing WHERE NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'leads')",
+            "expect": "no_rows"
+          }
+        ]
+      }
+    }
+  ]
+}

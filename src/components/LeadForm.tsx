@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { identifyCrm } from "@/lib/crmClient";
 
 /**
  * Lead capture, in two shapes:
@@ -81,12 +82,18 @@ export function LeadForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, source: window.location.pathname }),
       });
-      // Success only on a real 2xx: a swallowed failure would say "thanks"
-      // while the address was dropped.
-      if (!res.ok) {
+      // Success only on a real 2xx AND the API's own acknowledgement — a
+      // swallowed failure would say "thanks" while the address was dropped.
+      const result = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+      if (!res.ok || result?.ok !== true) {
         setError(true);
         return;
       }
+      // CRM の匿名プロフィールをこの連絡先に結びつける（管理画面の「CRM」で
+      // 連携が有効なときだけ。未設定なら何もしない）。
+      identifyCrm(data.email);
+      // 第一者分析の目標イベント（計測タグがビルドに含まれるときだけ）。
+      window.noimosTrack?.("goal:lead");
       setSubmitted(true);
     } catch {
       setError(true);
@@ -120,7 +127,7 @@ export function LeadForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit)} data-na-form="contact" className="space-y-3">
       {variant === "message" && (
         <div>
           <label htmlFor="lead-name" className={`mb-1 block text-sm ${labelClass}`}>

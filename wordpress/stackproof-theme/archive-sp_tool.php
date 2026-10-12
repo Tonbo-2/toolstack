@@ -62,13 +62,14 @@ $sp_categories = sp_categories();
 						$sp_category = sp_tool_category_label( $sp_tool->ID );
 						$sp_best_for = (string) get_post_meta( $sp_tool->ID, 'best_for', true );
 						$sp_watch    = (string) get_post_meta( $sp_tool->ID, 'watch_for', true );
-						$sp_search   = sp_lower( $sp_tool->post_title . ' ' . $sp_category . ' ' . $sp_best_for . ' ' . get_post_meta( $sp_tool->ID, 'standout', true ) );
+						$sp_name     = sp_tool_display_name( $sp_tool->ID );
+						$sp_search   = sp_lower( $sp_name . ' ' . $sp_category . ' ' . $sp_best_for . ' ' . get_post_meta( $sp_tool->ID, 'standout', true ) );
 						?>
 						<tr data-sp-row data-category="<?php echo esc_attr( sp_tool_category_slug( $sp_tool->ID ) ); ?>" data-search="<?php echo esc_attr( $sp_search ); ?>">
 							<td class="sp-cell-name" data-label="<?php echo esc_attr( sp_t( 'explorer.columnTool' ) ); ?>">
 								<span class="sp-cell-inner">
 									<?php sp_tool_mark( $sp_tool->ID ); ?>
-									<a href="<?php echo esc_url( get_permalink( $sp_tool ) ); ?>"><?php echo esc_html( $sp_tool->post_title ); ?></a>
+									<a href="<?php echo esc_url( get_permalink( $sp_tool ) ); ?>"><?php echo esc_html( $sp_name ); ?></a>
 								</span>
 							</td>
 							<td data-label="<?php echo esc_attr( sp_t( 'explorer.columnCategory' ) ); ?>"><?php echo esc_html( $sp_category ); ?></td>

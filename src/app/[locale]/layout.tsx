@@ -5,6 +5,7 @@ import "../globals.css";
 import { sora, inter } from "../fonts";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
+import { CrmTracking } from "@/components/CrmTracking";
 import StructuredData from "@/components/StructuredData";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import {
@@ -154,6 +155,9 @@ export default async function LocaleLayout({
         {children}
         <SiteFooter locale={typedLocale} />
         {process.env.NEXT_PUBLIC_ANALYTICS_API_BASE_URL && <AnalyticsTracker />}
+        {/* CRM の計測スクリプト（管理画面の「CRM」で有効にしたときだけ環境変数が
+            注入され、鍵が無ければ何も出しません）。ページビューは自動で送られます。 */}
+        <CrmTracking />
         {gaId && (
           <>
             <Script

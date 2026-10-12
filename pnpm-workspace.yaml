@@ -29,9 +29,13 @@ overrides:
   # Keep the Kysely adapter on the same verified client as direct Turso access.
   "@libsql/kysely-libsql>@libsql/client": "0.18.0"
   # Patched transitive versions for this independently installed template.
-  "@hono/node-server": "1.19.15"
+  "@hono/node-server": "1.19.17"
   baseline-browser-mapping: "2.11.25"
-  fast-uri: "3.1.6"
-  hono: "4.13.8"
+  fast-uri: "3.1.8"
+  # Prisma's configuration merges plain records; v8 fixes prototype pollution.
+  "@prisma/config>deepmerge-ts": "8.0.2"
+  hono: "4.13.13"
   mysql2: "3.24.4"
   valibot: "1.4.2"
+  undici: "7.30.0"
+  source-map-js: "1.2.2"
