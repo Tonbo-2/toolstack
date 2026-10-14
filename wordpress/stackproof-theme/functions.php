@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SP_THEME_VERSION', '1.3.48' );
+define( 'SP_THEME_VERSION', '1.3.55' );
 
 /**
  * ツールの説明文の版。
@@ -24,7 +24,7 @@ define( 'SP_THEME_VERSION', '1.3.48' );
  * 管理画面を開いたときの点検が、この値の変化を見て1回だけ入れ替えます
  * （inc/seed.php の sp_sync_tool_copy()）。編集画面で書き換えられた欄は残します。
  */
-define( 'SP_TOOL_COPY_VERSION', '2026-10-12-6' );
+define( 'SP_TOOL_COPY_VERSION', '2026-10-13-1' );
 
 /**
  * 固定ページの本文の版。
@@ -310,6 +310,39 @@ function sp_note_tool_title_edit( $post_id, $post_after, $post_before ) {
 	}
 }
 add_action( 'post_updated', 'sp_note_tool_title_edit', 10, 3 );
+
+/* ---------------------------------------------------------------
+ * 表示ヘルパー
+ * ------------------------------------------------------------- */
+/**
+ * 複数行の欄（向いている人・メリット・注意点・評価）を、改行が出る形にする。
+ *
+ * inc/data.php の値は改行を「\n」の2文字で持っている（PHP のシングルクォートは
+ * 改行に変換しない）。管理画面で打ち直した欄は本物の改行を持つ。どちらでも同じ
+ * ように改行が出るよう、ここで「\n」を改行に直してから nl2br() に渡す。
+ * 出力側は `nl2br( esc_html( sp_lines( $value ) ) )` の順（改行に直す → 記号を
+ * エスケープ → 改行を <br> に）。「**」の太字にも対応する欄は、esc_html() の
+ * あとに sp_inline_bold() を挟む（下記）。
+ */
+function sp_lines( $value ): string {
+	return str_replace( '\n', "\n", (string) $value );
+}
+
+/**
+ * 「**」で囲まれた語を太字にして出す。
+ *
+ * 編集画面から届くレビュー欄（評価・向いている人・メリット・注意点）の文には、
+ * 強調したい語を「**」で囲んだ箇所が混じる。囲みの記号は画面に出さず、中の語
+ * だけを <strong> にする。囲みのない文はそのまま出る。
+ *
+ * 呼び出しは `nl2br( sp_inline_bold( esc_html( sp_lines( $value ) ) ) )` の順。
+ * esc_html() が先なので、文中の「<」「>」「&」がタグとして復活することはない
+ * （esc_html() は「*」を変換しないため、囲みはそのまま残る）。
+ */
+function sp_inline_bold( $value ): string {
+	$out = preg_replace( '/\*\*(.+?)\*\*/s', '<strong>$1</strong>', (string) $value );
+	return null === $out ? (string) $value : $out;
+}
 
 /* ---------------------------------------------------------------
  * ツールの取得ヘルパー

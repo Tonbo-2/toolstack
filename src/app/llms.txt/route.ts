@@ -34,7 +34,7 @@ export async function GET() {
 
 ## 主要ページ
 - [ホーム](${SITE_URL}/): ${description}
-- [ツール一覧](${SITE_URL}/tools): 仕事で使えるAIツールを1つの表で比較。向いている業務と注意点も掲載。
+- [ツール一覧](${SITE_URL}/tools): 仕事で使えるAIツールを1つの表で比較。各ツールの説明も掲載。
 - [このサイトについて](${SITE_URL}/about): 運営者と、評価の書き方。
 
 ## 運営情報

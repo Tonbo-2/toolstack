@@ -38,16 +38,20 @@ export interface Tool {
   logo: string;
   category: CategorySlug;
   /**
-   * Two lines, split by "\n": 先頭が「どんなツールか」の一言説明、改行して「向いている人」。
-   * Rendered with `whitespace-pre-line` on the home list, the directory table and
-   * the tool page, so a one-line entry still reads as a fit statement on its own.
+   * The reader-facing 「向いている人」 text. Lines are split by "\n" and rendered
+   * as-is (`whitespace-pre-line`) on the home list, the tool page and its related
+   * list — one condition per line (most entries use "・" bullets).
    */
   bestFor: Localized;
   /** What it is genuinely good at. */
   standout: Localized;
   /** The honest cost of choosing it. */
   watchFor: Localized;
-  /** Two or three sentences of verdict. */
+  /**
+   * The tool page's lead (「ツール概要：…」 + a closing line). The /tools table and
+   * the home list print the same text without the 「ツール概要：」 label — see
+   * `verdictWithoutLeadLabel`.
+   */
   verdict: Localized;
   /** Slugs of tools that work well beside it. */
   pairsWith: string[];
@@ -68,6 +72,19 @@ export function toolDisplayName(tool: Pick<LocalizedTool, "name" | "reading">): 
   return formerName
     ? `${formerName[1]}（${tool.reading}、旧${formerName[2]}）`
     : `${tool.name}（${tool.reading}）`;
+}
+
+/**
+ * Drop the 「ツール概要：」 lead label from a `verdict`.
+ *
+ * The label belongs to the tool page, where it sits alone above the paragraph as
+ * the block's name. The two lists that print the same text as a row of their own
+ * leave it out: the /tools table says it in its column header (「ツールの説明」),
+ * and the home list already names the tool in the row. Nothing after the label
+ * changes — a verdict that does not start with the label comes back untouched.
+ */
+export function verdictWithoutLeadLabel(verdict: string): string {
+  return verdict.replace(/^ツール概要：\s*/u, "");
 }
 
 export type CategorySlug = "workspace" | "automation" | "writing-seo" | "email" | "audio-meetings";
@@ -156,13 +173,13 @@ export const TOOLS: Tool[] = [
       ja: "・「毎日コピペでデータを別ツールに移す作業」をゼロにしたいフリーランスやバックオフィス担当者\n・プログラミングやAPIの知識がなくても、ブロックを並べる感覚でアプリ同士を繋ぎたい人\n・国内外のSaaS（Notion、Gmail、Slack、Shopify、HubSpotなど）を複数併用している小規模チーム",
     },
     standout: {
-      ja: "連携できるアプリ数が世界最多（7,000以上）\nテンプレートが豊富で、数分で自動化が完成する\nエラーが起きても原因を特定しやすい",
+      ja: "・連携できるアプリ数が世界最多（7,000以上）\n・テンプレートが豊富で、数分で自動化が完成する\n・エラーが起きても原因を特定しやすい",
     },
     watchFor: {
-      ja: "「分岐が10個ある」「複雑なループ処理」になると管理が破綻しやすい\n動いた回数（タスク数）で課金されるため、大量処理だとコストが膨らむ\n日本語対応は一部のみ（基本は英語UI）",
+      ja: "・「分岐が10個ある」「複雑なループ処理」になると管理が破綻しやすい\n・動いた回数（タスク数）で課金されるため、大量処理だとコストが膨らむ\n・日本語対応は一部のみ（基本は英語UI）",
     },
     verdict: {
-      ja: "ツール概要： ・「毎日コピペでデータを別ツールに移す作業」をゼロにしたいフリーランスやバックオフィス担当者\n・プログラミングやAPIの知識がなくても、ブロックを並べる感覚でアプリ同士を繋ぎたい人\n・国内外のSaaS（Notion、Gmail、Slack、Shopify、HubSpotなど）を複数併用している小規模チーム\n「問い合わせが来たらSlackに通知してスプレッドシートに追記する」といった、2〜5ステップ前後の日常業務を自動化したいなら、まず選んで間違いのない定番ツールです。",
+      ja: "ツール概要： プログラミング不要で「Aのアプリで何かが起きたら、Bのアプリでこれを実行する」という連動ルールを作り、単純作業を自動で肩代わりさせるサービス（iPaaS）です。\n「問い合わせが来たらSlackに通知してスプレッドシートに追記する」といった、2〜5ステップ前後の日常業務を自動化したいなら、まず選んで間違いのない定番ツールです。",
     },
     pairsWith: ["notion", "kit"],
     reviewed: "2026-09-20",
@@ -184,7 +201,7 @@ export const TOOLS: Tool[] = [
       ja: "・初期の学習ハードルが高く、直感だけで動かすのは難しい\n・日本語の情報や公式サポートがまだ少なめ\n・「AからBへそのまま転送するだけ」の2ステップならZapierのほうが手軽",
     },
     verdict: {
-      ja: "ツール概要： ・「Aなら通知、Bならスプレッドシートに追記、Cならメール送信」といった複数の条件分岐を1つのワークフローでまとめたい人\n・日々の実行回数（タスク数）が多く、Zapierの従量課金だと毎月の固定費が高くなってしまう人\n・プログラミングは書けないが、パズルや回路図を組み立てるようにロジックを直感的に組みたい人\n「顧客の種別ごとに3通りに処理を分岐させ、データを計算して集計する」といった、少し複雑な業務フローを安く本格的に自動化したいならMakeが最適です。",
+      ja: "ツール概要： まるでマインドマップを描くように、丸いアイコン（モジュール）を線で繋ぎながら「分岐・計算・フィルター」を画面上で組み立てられる高機能な自動化プラットフォーム（iPaaS）です。\n「顧客の種別ごとに3通りに処理を分岐させ、データを計算して集計する」といった、少し複雑な業務フローを安く本格的に自動化したいならMakeが最適です。",
     },
     pairsWith: ["zapier", "notion"],
     reviewed: "2026-09-20",
@@ -206,7 +223,7 @@ export const TOOLS: Tool[] = [
       ja: "・個人利用には月額コストが高く、元を取りにくい\n・日常の相談や単発のリサーチ用途（Q&A）には向かない\n・生成された文章の事実確認（ファクトチェック）は必須",
     },
     verdict: {
-      ja: "ツール概要： ChatGPTのような雑談・汎用型ではなく、SEO記事、Web広告のキャッチコピー、メルマガ作成など**「売るための文章生成」に特化したマーケティング向けAIプラットフォーム**です。\n「複数のライターや社員で発信しているが、文章の雰囲気（文末やトーン）がバラバラで統一感がない」という課題を抱えるチームに最適な、マーケティング専用のAIツールです。",
+      ja: "ツール概要： ChatGPTのような雑談・汎用型ではなく、SEO記事、Web広告のキャッチコピー、メルマガ作成など「売るための文章生成」に特化したマーケティング向けAIプラットフォームです。\n「複数のライターや社員で発信しているが、文章の雰囲気（文末やトーン）がバラバラで統一感がない」という課題を抱えるチームに最適な、マーケティング専用のAIツールです。",
     },
     pairsWith: ["surfer-seo", "kit"],
     reviewed: "2026-09-20",
@@ -272,7 +289,7 @@ export const TOOLS: Tool[] = [
       ja: "・BtoBのような商談管理や案件パイプライン（CRM機能）は備わっていない\n・ECサイトのような画像多用・ブロック配置のリッチデザインは作りにくい\n・全く別の複数ブランドや会社を「完全に隔離して並行運用」するのは難しい",
     },
     verdict: {
-      ja: "ツール概要： ・ブログやSNSのフォロワーをメルマガに集め、定期配信を通じて濃いファンに育てたい発信者\n・外部の決済ツールを使わずに、「月額制の有料マガジン」や「PDF教材・限定動画」をその場ですぐ販売したい人\n・登録フォームを複数用意しても、同じ読者を重複カウントされない「無駄な課金ゼロ」の環境で運用したい個人・小規模チーム\n「自分の思考や専門知識をメルマガとして週1〜2回発信し、読者との濃い信頼関係を作りたい」というブロガー、講師、個人クリエイターにとって、最も無駄のない選択肢です。",
+      ja: "ツール概要： 複雑な営業システムを省き、「メールの執筆・配信」「読者ごとの興味タグ付け」「デジタルコンテンツの直接決済」をシンプルに完結させる、クリエイター特化型の配信プラットフォームです。\n「自分の思考や専門知識をメルマガとして週1〜2回発信し、読者との濃い信頼関係を作りたい」というブロガー、講師、個人クリエイターにとって、最も無駄のない選択肢です。",
     },
     pairsWith: ["surfer-seo", "notion"],
     reviewed: "2026-09-20",
@@ -314,7 +331,7 @@ export const TOOLS: Tool[] = [
       ja: "・機械っぽさ（ロボット感）がなく、無調整でもそのまま配信で使える声のクオリティ\n・自分の声（または専属ナレーターの声）を数分のサンプルから複製できる「ボイスクローン」\n・日本語の原稿を別言語へ自然に吹き替えられる多言語対応",
     },
     watchFor: {
-      ja: "他人の声を無断でクローンする「ディープフェイク・権利侵害」のリスク\n・文字数（クレジット）に応じた従量課金のため、長文の読み上げはコストがかさむ\n・日本語の漢字の読み分け（同音異義語・固有名詞）で誤読が起きることがある",
+      ja: "・他人の声を無断でクローンする「ディープフェイク・権利侵害」のリスク\n・文字数（クレジット）に応じた従量課金のため、長文の読み上げはコストがかさむ\n・日本語の漢字の読み分け（同音異義語・固有名詞）で誤読が起きることがある",
     },
     verdict: {
       ja: "ツール概要： 人間の声の抑揚・感情・リズムを極めて高い精度で学習し、入力したテキストから違和感のない高品質な肉声データを数秒で生成できるAI音声合成プラットフォームです。\n「ブログ記事やメルマガのテキストを、人がスタジオで収録したような自然なナレーションに変換して音声配信や動画に使いたい」なら、現在の生成AIの中で最も完成度が高い選択肢です。",

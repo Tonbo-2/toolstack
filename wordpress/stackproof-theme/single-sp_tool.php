@@ -37,7 +37,7 @@ while ( have_posts() ) :
 					</p>
 				</div>
 			</div>
-			<p class="sp-verdict"><?php echo esc_html( get_post_meta( $sp_id, 'verdict', true ) ); ?></p>
+			<p class="sp-verdict"><?php echo nl2br( sp_inline_bold( esc_html( sp_lines( get_post_meta( $sp_id, 'verdict', true ) ) ) ) ); ?></p>
 			<div class="sp-actions">
 				<a class="sp-btn sp-btn--primary" href="<?php echo esc_url( sp_go_url( get_post_field( 'post_name', $sp_id ) ) ); ?>" target="_blank" rel="noopener noreferrer">
 					<?php echo esc_html( sp_t( 'tool.visitLabel', array( 'name' => $sp_name ) ) ); ?>
@@ -51,15 +51,15 @@ while ( have_posts() ) :
 			<dl class="sp-defs">
 				<div class="sp-item-top">
 					<dt class="sp-item__title" style="font-size:0.875rem;text-transform:uppercase;letter-spacing:0.06em"><?php echo esc_html( sp_t( 'tool.bestFor' ) ); ?></dt>
-					<dd class="sp-defs__body"><?php echo nl2br( esc_html( get_post_meta( $sp_id, 'best_for', true ) ) ); ?></dd>
+					<dd class="sp-defs__body"><?php echo nl2br( sp_inline_bold( esc_html( sp_lines( get_post_meta( $sp_id, 'best_for', true ) ) ) ) ); ?></dd>
 				</div>
 				<div class="sp-item-top">
 					<dt class="sp-item__title" style="font-size:0.875rem;text-transform:uppercase;letter-spacing:0.06em"><?php echo esc_html( sp_t( 'tool.standout' ) ); ?></dt>
-					<dd class="sp-defs__body"><?php echo nl2br( esc_html( get_post_meta( $sp_id, 'standout', true ) ) ); ?></dd>
+					<dd class="sp-defs__body"><?php echo nl2br( sp_inline_bold( esc_html( sp_lines( get_post_meta( $sp_id, 'standout', true ) ) ) ) ); ?></dd>
 				</div>
 				<div class="sp-item-top sp-item-top--accent">
 					<dt class="sp-item__title" style="font-size:0.875rem;text-transform:uppercase;letter-spacing:0.06em"><?php echo esc_html( sp_t( 'tool.watchFor' ) ); ?></dt>
-					<dd class="sp-defs__body"><?php echo nl2br( esc_html( get_post_meta( $sp_id, 'watch_for', true ) ) ); ?></dd>
+					<dd class="sp-defs__body"><?php echo nl2br( sp_inline_bold( esc_html( sp_lines( get_post_meta( $sp_id, 'watch_for', true ) ) ) ) ); ?></dd>
 				</div>
 			</dl>
 		</div>
@@ -108,7 +108,7 @@ while ( have_posts() ) :
 								<?php sp_tool_mark( $sp_other->ID, 'sm' ); ?>
 								<a href="<?php echo esc_url( get_permalink( $sp_other ) ); ?>"><?php echo esc_html( sp_tool_display_name( $sp_other->ID ) ); ?></a>
 							</p>
-							<p class="sp-row__meta" style="margin-top:0.5rem"><?php echo nl2br( esc_html( get_post_meta( $sp_other->ID, 'best_for', true ) ) ); ?></p>
+							<p class="sp-row__meta" style="margin-top:0.5rem"><?php echo nl2br( sp_inline_bold( esc_html( sp_lines( get_post_meta( $sp_other->ID, 'best_for', true ) ) ) ) ); ?></p>
 						</li>
 					<?php endforeach; ?>
 				</ul>

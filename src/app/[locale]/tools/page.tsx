@@ -74,8 +74,7 @@ export default async function ToolsPage({
               caption: t.explorer.caption,
               columnTool: t.explorer.columnTool,
               columnCategory: t.explorer.columnCategory,
-              columnBestFor: t.explorer.columnBestFor,
-              columnWatchFor: t.explorer.columnWatchFor,
+              columnOverview: t.explorer.columnOverview,
               empty: t.explorer.empty,
             }}
           />

@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { InlineEmphasis } from "@/components/InlineEmphasis";
 import { ToolMark } from "@/components/ToolMark";
 import { localeHref, type Locale } from "@/lib/i18n";
-import { toolDisplayName, type LocalizedCategory, type LocalizedTool } from "@/lib/tools";
+import {
+  toolDisplayName,
+  verdictWithoutLeadLabel,
+  type LocalizedCategory,
+  type LocalizedTool,
+} from "@/lib/tools";
 
 /** The dictionary strings this table renders — passed in from the server page. */
 export interface ExplorerLabels {
@@ -16,15 +22,16 @@ export interface ExplorerLabels {
   caption: string;
   columnTool: string;
   columnCategory: string;
-  columnBestFor: string;
-  columnWatchFor: string;
+  columnOverview: string;
   empty: string;
 }
 
 /**
- * The filterable directory. Search runs over the product name, the fit
- * statement and the standout line, so a query like "newsletter" or "calls"
- * finds the entry even when the category is not selected.
+ * The filterable directory. Search runs over the product name, the description
+ * column (each tool's verdict — the same lead text as its tool page, printed
+ * here without the 「ツール概要：」 label its column header already states) and the
+ * category label, so a query like "会議" or "自動化" finds the entry even when
+ * the category is not selected.
  *
  * The table stays a real <table>; on small screens each row becomes a stacked
  * block with its own labels instead of a horizontally scrolling grid.
@@ -54,7 +61,7 @@ export function ToolExplorer({
       if (category && tool.category !== category) return false;
       if (!q) return true;
       const label = categories.find((c) => c.slug === tool.category)?.label ?? "";
-      return [toolDisplayName(tool), tool.bestFor, tool.standout, label]
+      return [toolDisplayName(tool), verdictWithoutLeadLabel(tool.verdict), label]
         .join(" ")
         .toLowerCase()
         .includes(q);
@@ -117,11 +124,8 @@ export function ToolExplorer({
             <th scope="col" className="py-3 pr-4 font-medium">
               {labels.columnCategory}
             </th>
-            <th scope="col" className="py-3 pr-4 font-medium">
-              {labels.columnBestFor}
-            </th>
             <th scope="col" className="py-3 font-medium">
-              {labels.columnWatchFor}
+              {labels.columnOverview}
             </th>
           </tr>
         </thead>
@@ -147,11 +151,10 @@ export function ToolExplorer({
                 <td className="block align-top text-sm text-muted md:table-cell md:py-4 md:pr-4">
                   <span className="mt-2 block md:mt-0">{label}</span>
                 </td>
-                <td className="block align-top text-sm text-muted md:table-cell md:py-4 md:pr-4">
-                  <span className="mt-2 block whitespace-pre-line md:mt-0">{tool.bestFor}</span>
-                </td>
                 <td className="block align-top text-sm text-muted md:table-cell md:py-4">
-                  <span className="mt-2 block whitespace-pre-line md:mt-0">{tool.watchFor}</span>
+                  <span className="mt-2 block whitespace-pre-line md:mt-0">
+                    <InlineEmphasis text={verdictWithoutLeadLabel(tool.verdict)} />
+                  </span>
                 </td>
               </tr>
             );

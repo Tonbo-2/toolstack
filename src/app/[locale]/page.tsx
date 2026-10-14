@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { InlineEmphasis } from "@/components/InlineEmphasis";
 import { ToolMark } from "@/components/ToolMark";
 import { BRAND } from "@/lib/brand";
 import { displayDate, fetchArticles } from "@/lib/blog";
@@ -10,6 +11,7 @@ import {
   toolBySlug,
   toolDisplayName,
   toolsFor,
+  verdictWithoutLeadLabel,
   type LocalizedTool,
 } from "@/lib/tools";
 
@@ -105,7 +107,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
             {featured.map((tool) => (
               <li
                 key={tool.slug}
-                className="grid gap-2 border-b border-border py-5 last:border-b-0 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,1.6fr)] sm:items-center"
+                className="grid gap-2 border-b border-border py-5 last:border-b-0 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,1.6fr)] sm:items-start"
               >
                 <span className="flex items-center gap-3">
                   <ToolMark logo={tool.logo} />
@@ -120,7 +122,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
                   {categories.find((c) => c.slug === tool.category)?.label}
                 </span>
                 <span className="whitespace-pre-line text-sm leading-6 text-muted">
-                  {tool.bestFor}
+                  <InlineEmphasis text={verdictWithoutLeadLabel(tool.verdict)} />
                 </span>
               </li>
             ))}

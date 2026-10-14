@@ -1,7 +1,7 @@
 /*
 Theme Name: ToolStack
 Description: ソフトウェアの比較・レビューサイト向けテーマ。比較表とレビューを、テキスト中心の読みやすい画面で表示します。
-Version: 1.3.48
+Version: 1.3.55
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -463,9 +463,10 @@ img, svg, video, iframe { max-width: 100%; height: auto; }
 .sp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 2rem; }
 .sp-actions__note { font-size: 0.75rem; line-height: 1.5; color: var(--sp-muted); max-width: 32rem; }
 
-.sp-defs { display: grid; gap: 2rem; margin: 0; padding: 0; }
-@media (min-width: 640px) { .sp-defs { grid-template-columns: repeat(3, 1fr); } }
-.sp-defs__body { margin: 0.5rem 0 0; font-size: 0.875rem; line-height: 1.6; color: var(--sp-muted); }
+/* 向いている人・メリット・注意点は横3列ではなく縦1列で積む（見出し→本文の順）。
+   箇条書きが長いため、狭い列に割ると折り返しが増えて読みにくい。 */
+.sp-defs { display: grid; gap: 1.5rem; margin: 0; padding: 0; }
+.sp-defs__body { margin: 0.5rem 0 0; font-size: 1rem; line-height: 1.7; color: var(--sp-muted); }
 
 .sp-pair-grid { display: grid; gap: 1rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
 @media (min-width: 640px) { .sp-pair-grid { grid-template-columns: 1fr 1fr; } }

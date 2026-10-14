@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { InlineEmphasis } from "@/components/InlineEmphasis";
 import { ToolMark } from "@/components/ToolMark";
 import {
   getDictionary,
@@ -24,13 +25,15 @@ import {
  * boundary — a description that stops mid-word reads as broken copy in the SERP.
  */
 function summarize(bestFor: string, watchFor: string, locale: Locale): string {
+  // 本文の「**」は画面では太字になる記号。検索結果には記号を出さない。
+  const plain = (value: string) => value.replace(/\*\*/g, "");
   const stop = locale === "ja" ? "。" : ". ";
   const cut = watchFor.indexOf(stop);
   const tradeoff = cut >= 0 ? watchFor.slice(0, cut + 1) : watchFor;
   // `bestFor` may carry a "\n" between the description and the fit line; a meta
   // description is a single line, so the break collapses to a space.
-  const fit = bestFor.replace(/\s+/g, " ").trim();
-  const full = `${fit} ${tradeoff}`.trim();
+  const fit = plain(bestFor).replace(/\s+/g, " ").trim();
+  const full = `${fit} ${plain(tradeoff)}`.trim();
   if (full.length <= 160) return full;
   if (locale === "ja") {
     const slice = full.slice(0, 159);
@@ -98,8 +101,11 @@ export default async function ToolPage({
               </p>
             </div>
           </div>
-          <p className="mt-8 border-l-2 border-accent pl-4 text-base leading-7 text-foreground">
-            {tool.verdict}
+          {/* 評価は複数行で届く欄。ほかの3欄と同じく文と文の間の改行をそのまま出し、
+              本文に混じる「**」の囲みは太字にして出す（InlineEmphasis）。
+              4欄（評価・向いている人・メリット・注意点）とも同じ扱いに揃えている。 */}
+          <p className="mt-8 whitespace-pre-line border-l-2 border-accent pl-4 text-base leading-7 text-foreground">
+            <InlineEmphasis text={tool.verdict} />
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
@@ -116,28 +122,34 @@ export default async function ToolPage({
 
       <section id="assessment" className="border-b border-border bg-background">
         <div className="mx-auto max-w-4xl px-5 py-12 sm:px-6">
-          <dl className="grid gap-8 sm:grid-cols-3">
+          {/* 3欄（向いている人・メリット・注意点）は横に並べず、縦に積んで読む。
+              箇条書きが1行で収まる長さなので、狭い3列に割ると折り返しばかりになり、
+              欄ごとに見出し→本文の順で上から下へ流れるほうが読みやすい。
+              3欄とも同じ作法（見出し＝上、本文＝その下）で、注意点だけ罫線をアクセント色にする。 */}
+          <dl className="grid gap-6">
             <div className="border-t border-border pt-4">
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
                 {t.tool.bestFor}
               </dt>
-              <dd className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
-                {tool.bestFor}
+              <dd className="mt-2 whitespace-pre-line text-base leading-7 text-muted">
+                <InlineEmphasis text={tool.bestFor} />
               </dd>
             </div>
             <div className="border-t border-border pt-4">
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
                 {t.tool.standout}
               </dt>
-              <dd className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
-                {tool.standout}
+              <dd className="mt-2 whitespace-pre-line text-base leading-7 text-muted">
+                <InlineEmphasis text={tool.standout} />
               </dd>
             </div>
             <div className="border-t border-accent pt-4">
               <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
                 {t.tool.watchFor}
               </dt>
-              <dd className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">{tool.watchFor}</dd>
+              <dd className="mt-2 whitespace-pre-line text-base leading-7 text-muted">
+                <InlineEmphasis text={tool.watchFor} />
+              </dd>
             </div>
           </dl>
         </div>
@@ -185,7 +197,7 @@ export default async function ToolPage({
                     {toolDisplayName(item)}
                   </Link>
                   <p className="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
-                    {item.bestFor}
+                    <InlineEmphasis text={item.bestFor} />
                   </p>
                 </li>
               ))}
